@@ -1,6 +1,10 @@
 //! All on-screen text: menu screens, the achievements page, and the in-match
 //! HUD (score, banners, serve/game-over prompts). Menu screens draw inside
 //! the engine's `MenuPanel` window chrome, styled from the chaos theme.
+//!
+//! Every player-facing string goes through `ctx.strings.tr(...)` — the title
+//! menu's Language item cycles locales (English/Pirate; Pirate also swaps
+//! the font via its locale file's `font` field).
 
 use engine_core::prelude::*;
 use crate::achievements::DISPLAY_SECTIONS;
@@ -23,13 +27,25 @@ impl PongGame {
 
     fn draw_title(&self, ctx: &mut GameContext, selection: u8) {
         let style = self.menu_style();
-        let panel = MenuPanel::new("INSICULOUS PONG", ctx.window_size / 2.0, 360.0, 4);
+        let strings = &ctx.strings;
+        let title = strings.tr("title.window").to_string();
+        let language_item =
+            format!("{}: {}", strings.tr("title.language"), strings.current_display_name());
+        let items = [
+            strings.tr("title.single").to_string(),
+            strings.tr("title.two").to_string(),
+            strings.tr("title.achievements").to_string(),
+            language_item,
+            strings.tr("title.exit").to_string(),
+        ];
+        let hint = strings.tr("title.hint").to_string();
+
+        let panel = MenuPanel::new(&title, ctx.window_size / 2.0, 360.0, items.len());
         let mut y = panel.begin(ctx.ui, &style);
-        let items = ["Single Player", "Two Player", "Achievements", "Exit"];
         for (i, item) in items.iter().enumerate() {
             y = panel.item(ctx.ui, y, item, i as u8 == selection, &style);
         }
-        panel.hint(ctx.ui, "W/S or D-Pad navigate - SPACE or (A) confirm", &style);
+        panel.hint(ctx.ui, &hint, &style);
     }
 
     fn draw_achievements(&self, ctx: &mut GameContext) {
@@ -39,12 +55,14 @@ impl PongGame {
 
         // Tall window covering most of the screen; the section list draws
         // left-aligned inside its bounds.
-        let panel = MenuPanel::new("ACHIEVEMENTS", ctx.window_size / 2.0, ctx.window_size.x - 120.0, 15);
+        let window_title = ctx.strings.tr("ach.window").to_string();
+        let panel = MenuPanel::new(&window_title, ctx.window_size / 2.0, ctx.window_size.x - 120.0, 15);
         let first_y = panel.begin(ctx.ui, &style);
         let rect = panel.panel_rect();
 
+        let unlocked_word = ctx.strings.tr("ach.unlocked").to_string();
         ctx.ui.label_centered(
-            &format!("{unlocked} / {total} unlocked"),
+            &format!("{unlocked} / {total} {unlocked_word}"),
             Vec2::new(ctx.window_size.x / 2.0, first_y - 8.0),
         );
 
@@ -56,8 +74,9 @@ impl PongGame {
         let desc_color = Color::new(0.75, 0.75, 0.8, 1.0);
         let header_color = Color::new(0.6, 0.75, 1.0, 1.0);
 
-        for (section, ids) in DISPLAY_SECTIONS {
-            ctx.ui.label_styled(section, Vec2::new(left, y), header_color, 16.0);
+        for (section_key, ids) in DISPLAY_SECTIONS {
+            let section = ctx.strings.tr(section_key).to_string();
+            ctx.ui.label_styled(&section, Vec2::new(left, y), header_color, 16.0);
             y += 22.0;
             for id in *ids {
                 let is_unlocked = ctx.achievements.is_unlocked(id);
@@ -71,7 +90,10 @@ impl PongGame {
                 };
 
                 let (name, desc) = if !is_unlocked && ach.hidden {
-                    ("???".to_string(), "Hidden — unlock to reveal".to_string())
+                    (
+                        ctx.strings.tr("ach.hidden_name").to_string(),
+                        ctx.strings.tr("ach.hidden_desc").to_string(),
+                    )
                 } else {
                     (ach.name.clone(), ach.description.clone())
                 };
@@ -88,35 +110,42 @@ impl PongGame {
             y += 6.0;
         }
 
-        panel.hint(ctx.ui, "ESC or SPACE to go back", &style);
+        let hint = ctx.strings.tr("ach.hint").to_string();
+        panel.hint(ctx.ui, &hint, &style);
     }
 
     fn draw_difficulty(&self, ctx: &mut GameContext, selection: u8) {
         let style = self.menu_style();
-        let panel = MenuPanel::new("SELECT DIFFICULTY", ctx.window_size / 2.0, 360.0, 3);
+        let window_title = ctx.strings.tr("diff.window").to_string();
+        let panel = MenuPanel::new(&window_title, ctx.window_size / 2.0, 360.0, 3);
         let mut y = panel.begin(ctx.ui, &style);
         let items = [Difficulty::Easy, Difficulty::Medium, Difficulty::Hard];
         for (i, diff) in items.iter().enumerate() {
-            y = panel.item(ctx.ui, y, diff.label(), i as u8 == selection, &style);
+            let label = ctx.strings.tr(diff.label_key()).to_string();
+            y = panel.item(ctx.ui, y, &label, i as u8 == selection, &style);
         }
-        panel.hint(ctx.ui, "SPACE to confirm - ESC to go back", &style);
+        let hint = ctx.strings.tr("diff.hint").to_string();
+        panel.hint(ctx.ui, &hint, &style);
     }
 
     fn draw_chaos(&self, ctx: &mut GameContext, selection: u8) {
         let style = self.menu_style();
-        let panel = MenuPanel::new("SELECT CHAOS MODE", ctx.window_size / 2.0, 400.0, 4);
+        let window_title = ctx.strings.tr("chaos.window").to_string();
+        let panel = MenuPanel::new(&window_title, ctx.window_size / 2.0, 400.0, 4);
         let mut y = panel.begin(ctx.ui, &style);
         for (i, mode) in ChaosMode::ALL.iter().enumerate() {
-            y = panel.item(ctx.ui, y, mode.label(), i as u8 == selection, &style);
+            let label = ctx.strings.tr(chaos_label_key(*mode)).to_string();
+            y = panel.item(ctx.ui, y, &label, i as u8 == selection, &style);
         }
 
-        let hint = match ChaosMode::ALL[selection as usize] {
-            ChaosMode::Normal => "Classic Pong.",
-            ChaosMode::Insane => "Ball doubles speed on every paddle hit.",
-            ChaosMode::Ridiculous => "Match starts with two balls.",
-            ChaosMode::Insiculous => "Two balls AND each doubles on paddle hits.",
+        let hint_key = match ChaosMode::ALL[selection as usize] {
+            ChaosMode::Normal => "chaos.normal.desc",
+            ChaosMode::Insane => "chaos.insane.desc",
+            ChaosMode::Ridiculous => "chaos.ridiculous.desc",
+            ChaosMode::Insiculous => "chaos.insiculous.desc",
         };
-        panel.hint(ctx.ui, hint, &style);
+        let hint = ctx.strings.tr(hint_key).to_string();
+        panel.hint(ctx.ui, &hint, &style);
     }
 
     fn draw_gameplay_hud(&self, ctx: &mut GameContext) {
@@ -124,8 +153,16 @@ impl PongGame {
         let cy = ctx.window_size.y / 2.0;
 
         let score_text = match self.settings.mode {
-            GameMode::SinglePlayer => format!("YOU {}  :  {} CPU", self.score.left, self.score.right),
-            GameMode::TwoPlayer => format!("P1 {}  :  {} P2", self.score.left, self.score.right),
+            GameMode::SinglePlayer => format!(
+                "{} {}  :  {} {}",
+                ctx.strings.tr("hud.you"), self.score.left,
+                self.score.right, ctx.strings.tr("hud.cpu"),
+            ),
+            GameMode::TwoPlayer => format!(
+                "{} {}  :  {} {}",
+                ctx.strings.tr("hud.p1"), self.score.left,
+                self.score.right, ctx.strings.tr("hud.p2"),
+            ),
         };
         ctx.ui.label_centered(&score_text, Vec2::new(cx, 24.0));
 
@@ -136,36 +173,53 @@ impl PongGame {
         }
 
         if self.power_ups.speed_boost.active() {
-            ctx.ui.label_centered(
-                &format!("SPEED BOOST {:.1}s", self.power_ups.speed_boost.remaining()),
-                Vec2::new(cx, 48.0),
+            let boost_text = format!(
+                "{} {:.1}s",
+                ctx.strings.tr("hud.speed_boost"),
+                self.power_ups.speed_boost.remaining(),
             );
+            ctx.ui.label_centered(&boost_text, Vec2::new(cx, 48.0));
         }
 
         match &self.state {
             GameState::Serving => {
-                ctx.ui.label_centered("Press SPACE to serve", Vec2::new(cx, cy - 50.0));
-                ctx.ui.label_centered("ESC to pause", Vec2::new(cx, cy - 24.0));
+                let serve = ctx.strings.tr("serve.prompt").to_string();
+                let pause = ctx.strings.tr("serve.pause").to_string();
+                ctx.ui.label_centered(&serve, Vec2::new(cx, cy - 50.0));
+                ctx.ui.label_centered(&pause, Vec2::new(cx, cy - 24.0));
             }
             GameState::GameOver { left_wins } => {
-                let msg = match (self.settings.mode, *left_wins) {
-                    (GameMode::SinglePlayer, true) => "YOU WIN!",
-                    (GameMode::SinglePlayer, false) => "CPU WINS!",
-                    (GameMode::TwoPlayer, true) => "PLAYER 1 WINS!",
-                    (GameMode::TwoPlayer, false) => "PLAYER 2 WINS!",
+                let msg_key = match (self.settings.mode, *left_wins) {
+                    (GameMode::SinglePlayer, true) => "over.you_win",
+                    (GameMode::SinglePlayer, false) => "over.cpu_wins",
+                    (GameMode::TwoPlayer, true) => "over.p1_wins",
+                    (GameMode::TwoPlayer, false) => "over.p2_wins",
                 };
+                let msg = ctx.strings.tr(msg_key).to_string();
+                let again = ctx.strings.tr("over.again").to_string();
+                let hint = ctx.strings.tr("over.hint").to_string();
                 let style = self.menu_style();
-                let panel = MenuPanel::new(msg, Vec2::new(cx, cy), 340.0, 1);
+                let panel = MenuPanel::new(&msg, Vec2::new(cx, cy), 340.0, 1);
                 let y = panel.begin(ctx.ui, &style);
-                panel.line(ctx.ui, y, "SPACE to play again", &style);
-                panel.hint(ctx.ui, "ESC for title screen", &style);
+                panel.line(ctx.ui, y, &again, &style);
+                panel.hint(ctx.ui, &hint, &style);
             }
             _ => {}
         }
 
         if self.pause.is_active() {
             let style = self.menu_style();
-            self.pause.draw(ctx.ui, ctx.window_size, &style);
+            let labels = PauseMenuLabels {
+                title: ctx.strings.tr("pause.title"),
+                items: [
+                    ctx.strings.tr("pause.resume"),
+                    ctx.strings.tr("pause.restart"),
+                    ctx.strings.tr("pause.quit_title"),
+                    ctx.strings.tr("pause.exit_game"),
+                ],
+                hint: ctx.strings.tr("pause.hint"),
+            };
+            self.pause.draw_labeled(ctx.ui, ctx.window_size, &style, &labels);
         }
     }
 }

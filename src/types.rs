@@ -28,12 +28,24 @@ impl Difficulty {
         }
     }
 
-    pub(crate) fn label(self) -> &'static str {
+    /// Locale key for this difficulty's display name.
+    pub(crate) fn label_key(self) -> &'static str {
         match self {
-            Difficulty::Easy => "Easy",
-            Difficulty::Medium => "Medium",
-            Difficulty::Hard => "Hard",
+            Difficulty::Easy => "diff.easy",
+            Difficulty::Medium => "diff.medium",
+            Difficulty::Hard => "diff.hard",
         }
+    }
+}
+
+/// Locale key for a chaos mode's display name (the engine's
+/// `ChaosMode::label()` is fixed English; menus translate through this).
+pub(crate) fn chaos_label_key(mode: ChaosMode) -> &'static str {
+    match mode {
+        ChaosMode::Normal => "chaos.normal",
+        ChaosMode::Insane => "chaos.insane",
+        ChaosMode::Ridiculous => "chaos.ridiculous",
+        ChaosMode::Insiculous => "chaos.insiculous",
     }
 }
 

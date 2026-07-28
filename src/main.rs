@@ -20,7 +20,9 @@ impl Game for PongGame {
             ctx.ui.set_default_font(font);
         }
 
-        achievements::register_all(ctx.achievements);
+        // Names/descriptions come from the locale tables; the title menu's
+        // Language item re-registers on locale switches.
+        achievements::register_all(ctx.achievements, ctx.strings);
 
         let tex = ctx.assets.create_solid_color(1, 1, [255, 255, 255, 255]).unwrap();
         self.textures.white = tex.id;

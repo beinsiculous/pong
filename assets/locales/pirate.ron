@@ -1,0 +1,98 @@
+// Pirate locale for Insiculous Pong — same key set as en.ron (enforced by
+// the locale_files_have_matching_keys test). Also swaps the font.
+LocaleFile(
+    version: 1,
+    display_name: "Pirate",
+    // Relative to the asset base path (the game's assets/ directory).
+    font: Some("fonts/BlackSamsGold-ej5e.ttf"),
+    strings: {
+        // Title screen
+        "title.window": "INSICULOUS PONG O' THE SEAS",
+        "title.single": "Lone Buccaneer",
+        "title.two": "Duel o' Deckhands",
+        "title.achievements": "Trophies o' Plunder",
+        "title.language": "Tongue",
+        "title.exit": "Abandon Ship",
+        "title.hint": "W/S or D-Pad to steer - SPACE or (A) to board",
+
+        // Difficulty select
+        "diff.window": "PICK YER FOE",
+        "diff.easy": "Landlubber",
+        "diff.medium": "Deckhand",
+        "diff.hard": "Sea Devil",
+        "diff.hint": "SPACE to board - ESC to turn tail",
+
+        // Chaos select
+        "chaos.window": "PICK YER STORM",
+        "chaos.normal": "Calm Seas",
+        "chaos.insane": "Squall",
+        "chaos.ridiculous": "Tempest",
+        "chaos.insiculous": "Maelstrom",
+        "chaos.normal.desc": "Plain sailin' Pong.",
+        "chaos.insane.desc": "Cannonball gains speed off every oar.",
+        "chaos.ridiculous.desc": "Ye start with two cannonballs.",
+        "chaos.insiculous.desc": "Two cannonballs AND each gains speed off oars.",
+
+        // In-match HUD (numbers are formatted around these fragments)
+        "hud.you": "YE",
+        "hud.cpu": "KRAKEN",
+        "hud.p1": "CAP'N 1",
+        "hud.p2": "CAP'N 2",
+        "hud.speed_boost": "FULL SAIL",
+        "serve.prompt": "SPACE to fire the cannon",
+        "serve.pause": "ESC to drop anchor",
+
+        // Game over
+        "over.you_win": "VICTORY, ARRR!",
+        "over.cpu_wins": "THE KRAKEN PREVAILS!",
+        "over.p1_wins": "CAP'N 1 TAKES THE BOOTY!",
+        "over.p2_wins": "CAP'N 2 TAKES THE BOOTY!",
+        "over.again": "SPACE fer another voyage",
+        "over.hint": "ESC to port",
+
+        // Pause menu
+        "pause.title": "ANCHORED",
+        "pause.resume": "Set Sail",
+        "pause.restart": "New Voyage",
+        "pause.quit_title": "Back to Port",
+        "pause.exit_game": "Abandon Ship",
+        "pause.hint": "ESC weighs anchor - SPACE confirms",
+
+        // Achievements page
+        "ach.window": "TROPHIES O' PLUNDER",
+        "ach.unlocked": "plundered",
+        "ach.hidden_name": "???",
+        "ach.hidden_desc": "Secret booty — plunder it to reveal",
+        "ach.hint": "ESC or SPACE to sail back",
+        "ach.section.cpu": "Kraken Battles",
+        "ach.section.chaos": "Storm Victories",
+        "ach.section.shutouts": "Flawless Voyages",
+        "ach.section.multi": "Crew Duels",
+
+        // Achievement names + descriptions (id-keyed)
+        "ach.beat_cpu_easy.name": "Barnacle Scraper",
+        "ach.beat_cpu_easy.desc": "Best a landlubber Kraken.",
+        "ach.beat_cpu_medium.name": "Able Seadog",
+        "ach.beat_cpu_medium.desc": "Best a deckhand Kraken.",
+        "ach.beat_cpu_hard.name": "Scourge o' the Seas",
+        "ach.beat_cpu_hard.desc": "Best the Sea Devil itself.",
+        "ach.win_normal.name": "First Plunder",
+        "ach.win_normal.desc": "Win a voyage on calm seas.",
+        "ach.win_insane.name": "Squall Rider",
+        "ach.win_insane.desc": "Win a voyage through the squall.",
+        "ach.win_ridiculous.name": "Tempest Tamer",
+        "ach.win_ridiculous.desc": "Win a voyage through the tempest.",
+        "ach.win_insiculous.name": "Maelstrom Monarch",
+        "ach.win_insiculous.desc": "Win a voyage through the maelstrom.",
+        "ach.two_player.name": "Parley!",
+        "ach.two_player.desc": "Finish a duel o' deckhands.",
+        "ach.shutout_normal.name": "Dry Powder",
+        "ach.shutout_normal.desc": "Win on calm seas without takin' a hit.",
+        "ach.shutout_insane.name": "Untouchable Corsair",
+        "ach.shutout_insane.desc": "Shut out the foe in the squall.",
+        "ach.shutout_ridiculous.name": "Ghost Ship",
+        "ach.shutout_ridiculous.desc": "Shut out the foe in the tempest.",
+        "ach.shutout_insiculous.name": "Terror o' the Maelstrom",
+        "ach.shutout_insiculous.desc": "Shut out the foe in the maelstrom.",
+    },
+)

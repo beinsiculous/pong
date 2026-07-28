@@ -25,65 +25,43 @@ pub(crate) const SHUTOUT_INSANE:     &str = "shutout_insane";
 pub(crate) const SHUTOUT_RIDICULOUS: &str = "shutout_ridiculous";
 pub(crate) const SHUTOUT_INSICULOUS: &str = "shutout_insiculous";
 
+/// Every achievement id, in registration order.
+pub(crate) const ALL_IDS: [&str; 12] = [
+    BEAT_CPU_EASY, BEAT_CPU_MEDIUM, BEAT_CPU_HARD,
+    WIN_NORMAL, WIN_INSANE, WIN_RIDICULOUS, WIN_INSICULOUS,
+    TWO_PLAYER,
+    SHUTOUT_NORMAL, SHUTOUT_INSANE, SHUTOUT_RIDICULOUS, SHUTOUT_INSICULOUS,
+];
+
 /// Grouped display order for the achievements page. First tuple element is
-/// the section header, second is the list of ids to render under it.
+/// the section-header locale key, second is the list of ids under it.
 pub(crate) const DISPLAY_SECTIONS: &[(&str, &[&str])] = &[
-    ("CPU Difficulty",
+    ("ach.section.cpu",
         &[BEAT_CPU_EASY, BEAT_CPU_MEDIUM, BEAT_CPU_HARD]),
-    ("Chaos Mode Wins",
+    ("ach.section.chaos",
         &[WIN_NORMAL, WIN_INSANE, WIN_RIDICULOUS, WIN_INSICULOUS]),
-    ("Shutouts",
+    ("ach.section.shutouts",
         &[SHUTOUT_NORMAL, SHUTOUT_INSANE, SHUTOUT_RIDICULOUS, SHUTOUT_INSICULOUS]),
-    ("Multiplayer",
+    ("ach.section.multi",
         &[TWO_PLAYER]),
 ];
 
-/// Register every Pong achievement. Call once from `Game::init`.
-pub(crate) fn register_all(mgr: &mut AchievementManager) {
-    // Difficulty (CPU wins). Beating a higher difficulty cascades to unlock
-    // easier ones too — handled at unlock time, not registration.
-    mgr.register(Achievement::new(BEAT_CPU_EASY,
-        "Training Wheels",
-        "Beat the CPU on Easy."));
-    mgr.register(Achievement::new(BEAT_CPU_MEDIUM,
-        "Holding Your Own",
-        "Beat the CPU on Medium."));
-    mgr.register(Achievement::new(BEAT_CPU_HARD,
-        "Pong Master",
-        "Beat the CPU on Hard."));
-
-    // Chaos mode wins
-    mgr.register(Achievement::new(WIN_NORMAL,
-        "First Victory",
-        "Win a match in Normal mode."));
-    mgr.register(Achievement::new(WIN_INSANE,
-        "Insanely Good",
-        "Win a match in Insane mode."));
-    mgr.register(Achievement::new(WIN_RIDICULOUS,
-        "This Is Ridiculous",
-        "Win a match in Ridiculous mode."));
-    mgr.register(Achievement::new(WIN_INSICULOUS,
-        "Insiculous Champion",
-        "Win a match in Insiculous mode."));
-
-    // Multiplayer
-    mgr.register(Achievement::new(TWO_PLAYER,
-        "Friendly Rivalry",
-        "Finish a 2-player match."));
-
-    // Shutouts (difficulty ignored — any win where the opponent never scored)
-    mgr.register(Achievement::new(SHUTOUT_NORMAL,
-        "Clean Sheet",
-        "Win a Normal-mode match without the opponent scoring."));
-    mgr.register(Achievement::new(SHUTOUT_INSANE,
-        "Untouchable",
-        "Shut out the opponent in Insane mode."));
-    mgr.register(Achievement::new(SHUTOUT_RIDICULOUS,
-        "Impossibly Clean",
-        "Shut out the opponent in Ridiculous mode."));
-    mgr.register(Achievement::new(SHUTOUT_INSICULOUS,
-        "Insiculously Dominant",
-        "Shut out the opponent in Insiculous mode."));
+/// Register every Pong achievement with names/descriptions from the locale
+/// tables (`ach.<id>.name` / `ach.<id>.desc`). Called from `Game::init` AND
+/// again after a locale switch — `register` is an id-keyed insert, so
+/// re-registering refreshes the display strings without touching unlock
+/// state. (Beating a higher CPU difficulty cascades to unlock easier ones —
+/// handled at unlock time, not registration.)
+pub(crate) fn register_all(mgr: &mut AchievementManager, strings: &Strings) {
+    for id in ALL_IDS {
+        let name_key = format!("ach.{id}.name");
+        let desc_key = format!("ach.{id}.desc");
+        mgr.register(Achievement::new(
+            id,
+            strings.tr(&name_key).to_string(),
+            strings.tr(&desc_key).to_string(),
+        ));
+    }
 }
 
 impl PongGame {
@@ -145,11 +123,56 @@ fn chaos_shutout_id(mode: ChaosMode) -> &'static str {
 mod tests {
     use super::*;
 
+    /// The game's real locale tables, loaded from assets/locales.
+    fn real_strings() -> Strings {
+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("assets/locales");
+        Strings::load_dir(&dir)
+    }
+
     #[test]
     fn register_all_adds_twelve() {
         let mut mgr = AchievementManager::in_memory();
-        register_all(&mut mgr);
+        register_all(&mut mgr, &Strings::empty());
         assert_eq!(mgr.total(), 12);
+    }
+
+    #[test]
+    fn register_all_uses_locale_names_and_rereg_keeps_unlocks() {
+        let strings = real_strings();
+        let mut mgr = AchievementManager::in_memory();
+        register_all(&mut mgr, &strings);
+        assert_eq!(mgr.get(BEAT_CPU_EASY).unwrap().name, "Training Wheels");
+
+        mgr.unlock(BEAT_CPU_EASY);
+        assert!(mgr.is_unlocked(BEAT_CPU_EASY));
+
+        // Switch locale, re-register: names refresh, unlock state survives.
+        let mut strings = strings;
+        strings.set_locale("pirate");
+        register_all(&mut mgr, &strings);
+        assert_eq!(mgr.get(BEAT_CPU_EASY).unwrap().name, "Barnacle Scraper");
+        assert!(mgr.is_unlocked(BEAT_CPU_EASY), "re-registering must not reset unlocks");
+    }
+
+    #[test]
+    fn locale_files_have_matching_keys() {
+        let strings = real_strings();
+        let en = strings.locale_keys("en").expect("en.ron loads");
+        let pirate = strings.locale_keys("pirate").expect("pirate.ron loads");
+        assert!(!en.is_empty(), "en locale must define keys");
+        assert_eq!(en, pirate, "en.ron and pirate.ron must define the same key set");
+    }
+
+    #[test]
+    fn every_achievement_id_has_name_and_desc_keys() {
+        let strings = real_strings();
+        let en = strings.locale_keys("en").expect("en.ron loads");
+        for id in ALL_IDS {
+            let name_key = format!("ach.{id}.name");
+            let desc_key = format!("ach.{id}.desc");
+            assert!(en.contains(&name_key.as_str()), "{name_key} missing from en.ron");
+            assert!(en.contains(&desc_key.as_str()), "{desc_key} missing from en.ron");
+        }
     }
 
     #[test]
@@ -171,7 +194,7 @@ mod tests {
     #[test]
     fn display_sections_cover_every_registered_achievement() {
         let mut mgr = AchievementManager::in_memory();
-        register_all(&mut mgr);
+        register_all(&mut mgr, &Strings::empty());
 
         let shown: std::collections::HashSet<&str> = DISPLAY_SECTIONS
             .iter()
@@ -191,7 +214,7 @@ mod tests {
     #[test]
     fn every_id_is_registered() {
         let mut mgr = AchievementManager::in_memory();
-        register_all(&mut mgr);
+        register_all(&mut mgr, &Strings::empty());
         for id in [
             BEAT_CPU_EASY, BEAT_CPU_MEDIUM, BEAT_CPU_HARD,
             WIN_NORMAL, WIN_INSANE, WIN_RIDICULOUS, WIN_INSICULOUS,

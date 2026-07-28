@@ -7,7 +7,7 @@ use crate::types::*;
 impl PongGame {
     pub(crate) fn update_title_input(&mut self, ctx: &mut GameContext, selection: u8) {
         let input = MenuInput::read(ctx.input);
-        let selection = input.navigate(selection, 4);
+        let selection = input.navigate(selection, 5);
         self.state = GameState::TitleScreen { selection };
 
         if input.confirm {
@@ -18,6 +18,13 @@ impl PongGame {
                     self.state = GameState::ChaosSelect { selection: 0 };
                 }
                 2 => self.state = GameState::Achievements,
+                3 => {
+                    // Language: cycle locale, then re-register achievements
+                    // so their names/descriptions pick up the new language
+                    // (id-keyed insert — unlock state is untouched).
+                    ctx.strings.cycle_locale();
+                    crate::achievements::register_all(ctx.achievements, ctx.strings);
+                }
                 _ => ctx.exit_requested = true,
             }
         }

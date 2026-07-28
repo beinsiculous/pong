@@ -1,0 +1,96 @@
+// English locale for Insiculous Pong. Every key here must also exist in
+// pirate.ron (enforced by the locale_files_have_matching_keys test).
+LocaleFile(
+    version: 1,
+    display_name: "English",
+    strings: {
+        // Title screen
+        "title.window": "INSICULOUS PONG",
+        "title.single": "Single Player",
+        "title.two": "Two Player",
+        "title.achievements": "Achievements",
+        "title.language": "Language",
+        "title.exit": "Exit",
+        "title.hint": "W/S or D-Pad navigate - SPACE or (A) confirm",
+
+        // Difficulty select
+        "diff.window": "SELECT DIFFICULTY",
+        "diff.easy": "Easy",
+        "diff.medium": "Medium",
+        "diff.hard": "Hard",
+        "diff.hint": "SPACE to confirm - ESC to go back",
+
+        // Chaos select
+        "chaos.window": "SELECT CHAOS MODE",
+        "chaos.normal": "Normal",
+        "chaos.insane": "Insane",
+        "chaos.ridiculous": "Ridiculous",
+        "chaos.insiculous": "Insiculous",
+        "chaos.normal.desc": "Classic Pong.",
+        "chaos.insane.desc": "Ball doubles speed on every paddle hit.",
+        "chaos.ridiculous.desc": "Match starts with two balls.",
+        "chaos.insiculous.desc": "Two balls AND each doubles on paddle hits.",
+
+        // In-match HUD (numbers are formatted around these fragments)
+        "hud.you": "YOU",
+        "hud.cpu": "CPU",
+        "hud.p1": "P1",
+        "hud.p2": "P2",
+        "hud.speed_boost": "SPEED BOOST",
+        "serve.prompt": "Press SPACE to serve",
+        "serve.pause": "ESC to pause",
+
+        // Game over
+        "over.you_win": "YOU WIN!",
+        "over.cpu_wins": "CPU WINS!",
+        "over.p1_wins": "PLAYER 1 WINS!",
+        "over.p2_wins": "PLAYER 2 WINS!",
+        "over.again": "SPACE to play again",
+        "over.hint": "ESC for title screen",
+
+        // Pause menu
+        "pause.title": "PAUSED",
+        "pause.resume": "Resume",
+        "pause.restart": "Restart",
+        "pause.quit_title": "Quit to Title",
+        "pause.exit_game": "Exit Game",
+        "pause.hint": "ESC resumes - SPACE confirms",
+
+        // Achievements page
+        "ach.window": "ACHIEVEMENTS",
+        "ach.unlocked": "unlocked",
+        "ach.hidden_name": "???",
+        "ach.hidden_desc": "Hidden — unlock to reveal",
+        "ach.hint": "ESC or SPACE to go back",
+        "ach.section.cpu": "CPU Difficulty",
+        "ach.section.chaos": "Chaos Mode Wins",
+        "ach.section.shutouts": "Shutouts",
+        "ach.section.multi": "Multiplayer",
+
+        // Achievement names + descriptions (id-keyed)
+        "ach.beat_cpu_easy.name": "Training Wheels",
+        "ach.beat_cpu_easy.desc": "Beat the CPU on Easy.",
+        "ach.beat_cpu_medium.name": "Holding Your Own",
+        "ach.beat_cpu_medium.desc": "Beat the CPU on Medium.",
+        "ach.beat_cpu_hard.name": "Pong Master",
+        "ach.beat_cpu_hard.desc": "Beat the CPU on Hard.",
+        "ach.win_normal.name": "First Victory",
+        "ach.win_normal.desc": "Win a match in Normal mode.",
+        "ach.win_insane.name": "Insanely Good",
+        "ach.win_insane.desc": "Win a match in Insane mode.",
+        "ach.win_ridiculous.name": "This Is Ridiculous",
+        "ach.win_ridiculous.desc": "Win a match in Ridiculous mode.",
+        "ach.win_insiculous.name": "Insiculous Champion",
+        "ach.win_insiculous.desc": "Win a match in Insiculous mode.",
+        "ach.two_player.name": "Friendly Rivalry",
+        "ach.two_player.desc": "Finish a 2-player match.",
+        "ach.shutout_normal.name": "Clean Sheet",
+        "ach.shutout_normal.desc": "Win a Normal-mode match without the opponent scoring.",
+        "ach.shutout_insane.name": "Untouchable",
+        "ach.shutout_insane.desc": "Shut out the opponent in Insane mode.",
+        "ach.shutout_ridiculous.name": "Impossibly Clean",
+        "ach.shutout_ridiculous.desc": "Shut out the opponent in Ridiculous mode.",
+        "ach.shutout_insiculous.name": "Insiculously Dominant",
+        "ach.shutout_insiculous.desc": "Shut out the opponent in Insiculous mode.",
+    },
+)

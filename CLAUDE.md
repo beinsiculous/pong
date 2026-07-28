@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 cargo run                     # play the game
 cargo run --features editor   # run the game inside the engine's scene editor
 cargo build                   # compile check
-cargo test                    # run tests (currently only in src/achievements.rs)
+cargo test                    # run tests (in src/achievements.rs — incl. locale-file parity)
 cargo test <test_name>        # run a single test
 ```
 
@@ -38,3 +38,5 @@ This is a single-crate game (`insiculous_pong`) built on the in-house `insiculou
 **Visuals:** the Geometry-Wars look comes from `Sprite::with_emissive` values feeding the engine's bloom (ball 2.5, paddles 1.5, walls 0.6) plus a spring-mass deforming grid (`effects.rs`) whose line vertices are pushed into `ctx.lines` every frame after gameplay, so it reacts to that frame's collisions.
 
 **Paths:** assets and saves resolve through `game_root()` in main.rs (exe directory if it contains `assets/`, else `CARGO_MANIFEST_DIR`), so `cargo run` works from any cwd. Achievements persist to `saves/pong_achievements.json`; achievement definitions and unlock logic live in `achievements.rs` and register with the engine's achievement system in `init()`.
+
+**Localization (Jul 2026):** every player-facing string goes through `ctx.strings.tr("key")`; the tables live in `assets/locales/{en,pirate}.ron` (engine loads them via the default `locales` dir under the asset base). Both files MUST define the same key set — `locale_files_have_matching_keys` in achievements.rs enforces it. The title menu's "Language" item cycles locales and re-registers achievements (id-keyed insert refreshes names/descriptions without touching unlocks; keys are `ach.<id>.name`/`ach.<id>.desc`). Pirate's locale file names `fonts/BlackSamsGold-ej5e.ttf`, so switching also swaps the game font. The pause overlay localizes via `PauseMenu::draw_labeled` + `PauseMenuLabels`; difficulty/chaos menu labels come from `Difficulty::label_key()` / `chaos_label_key()` in types.rs.
