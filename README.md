@@ -65,6 +65,41 @@ scene editor — useful for inspecting and tuning entities while the game runs:
   ...), since all entities are spawned from those constants in
   `src/spawning.rs`.
 
+## The Deion Pivot: Tong
+
+The game you get today is the neon Geometry-Wars build above — but Pong is
+first in line for the **Phase G Deion re-skin**, where it becomes **Tong** and
+doubles as the validation run for the engine's new sprite pipeline.
+
+The paddles become **living tong characters**: kitchen tongs with faces. The
+tongs ARE the characters — the AI opponent is a tong personality, and two-player
+mode is simply a second tong. Their rounded gripping ends give each paddle a
+naturally rounded collision surface, deliberately making play less flat than
+rectangle paddles. The tong design is shared with Breakout's Food Pyramid
+re-skin, and it replaces the earlier baguette-paddle casting in DEION_STYLE §5.
+
+**Deion stays the ball.** Canon: he squash-stretches on paddle hits and his
+icicle mohawk trails behind him. A countertop court and crumb/splash particles
+are live proposals.
+
+Art follows the settled style metrics (SSOT: `deion_assets/DEION_STYLE.md`
+via the repo-root symlink): 16px base cell, nearest filtering, 5× integer
+scale to `RENDER_UNIT = 80` — one art cell = one world unit, never faked via
+`Transform2D.scale`. Because colliders are absolute pixels and ignore scale,
+the rounded tong paddle forces a collider-shape decision at re-skin time
+(part of Phase G's definition of done). Runtime art arrives only through the
+deion_assets sync copy into `assets/sprites/`; AI-generated stand-ins never
+ship.
+
+**Open questions** (answered questions move up into the theme spec above and
+get DELETED from this list — live-docs convention):
+
+- Tong character personalities and expressions — what does each tong look
+  and act like?
+- Rounded paddle collider shape — capsule vs polyline?
+- Do the two tongs get distinct designs, or is P2 a palette swap?
+- Does the ball's icicle trail interact with the deforming grid?
+
 ## Project Layout
 
 ```

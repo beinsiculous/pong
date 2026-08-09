@@ -1,2 +1,6 @@
 /target
 *.lock
+
+# review transients (adversarial-review outputs)
+review/*
+!review/.gitkeep
