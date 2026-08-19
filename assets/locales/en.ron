@@ -11,14 +11,14 @@ LocaleFile(
         "title.achievements": "Achievements",
         "title.language": "Language",
         "title.exit": "Exit",
-        "title.hint": "W/S or D-Pad navigate - SPACE or (A) confirm",
+        "title.hint": "W/S or D-Pad navigate - SPACE/ENTER, (A), or click confirm",
 
         // Difficulty select
         "diff.window": "SELECT DIFFICULTY",
         "diff.easy": "Easy",
         "diff.medium": "Medium",
         "diff.hard": "Hard",
-        "diff.hint": "SPACE to confirm - ESC to go back",
+        "diff.hint": "SPACE/ENTER or click to confirm - ESC to go back",
 
         // Chaos select
         "chaos.window": "SELECT CHAOS MODE",
@@ -37,7 +37,7 @@ LocaleFile(
         "hud.p1": "P1",
         "hud.p2": "P2",
         "hud.speed_boost": "SPEED BOOST",
-        "serve.prompt": "Press SPACE to serve",
+        "serve.prompt": "Press SPACE or ENTER to serve",
         "serve.pause": "ESC to pause",
 
         // Game over
@@ -45,7 +45,7 @@ LocaleFile(
         "over.cpu_wins": "CPU WINS!",
         "over.p1_wins": "PLAYER 1 WINS!",
         "over.p2_wins": "PLAYER 2 WINS!",
-        "over.again": "SPACE to play again",
+        "over.again": "SPACE or ENTER to play again",
         "over.hint": "ESC for title screen",
 
         // Pause menu
@@ -54,14 +54,14 @@ LocaleFile(
         "pause.restart": "Restart",
         "pause.quit_title": "Quit to Title",
         "pause.exit_game": "Exit Game",
-        "pause.hint": "ESC resumes - SPACE confirms",
+        "pause.hint": "ESC resumes - SPACE/ENTER or click confirms",
 
         // Achievements page
         "ach.window": "ACHIEVEMENTS",
         "ach.unlocked": "unlocked",
         "ach.hidden_name": "???",
         "ach.hidden_desc": "Hidden — unlock to reveal",
-        "ach.hint": "ESC or SPACE to go back",
+        "ach.hint": "ESC, SPACE, or click to go back",
         "ach.section.cpu": "CPU Difficulty",
         "ach.section.chaos": "Chaos Mode Wins",
         "ach.section.shutouts": "Shutouts",

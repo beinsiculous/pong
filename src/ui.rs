@@ -8,6 +8,7 @@
 
 use engine_core::prelude::*;
 use crate::achievements::DISPLAY_SECTIONS;
+use crate::menu::{achievements_panel, chaos_panel, difficulty_panel, title_panel};
 use crate::types::*;
 
 impl PongGame {
@@ -40,7 +41,7 @@ impl PongGame {
         ];
         let hint = strings.tr("title.hint").to_string();
 
-        let panel = MenuPanel::new(&title, ctx.window_size / 2.0, 360.0, items.len());
+        let panel = title_panel(&title, ctx.window_size);
         let mut y = panel.begin(ctx.ui, &style);
         for (i, item) in items.iter().enumerate() {
             y = panel.item(ctx.ui, y, item, i as u8 == selection, &style);
@@ -56,7 +57,7 @@ impl PongGame {
         // Tall window covering most of the screen; the section list draws
         // left-aligned inside its bounds.
         let window_title = ctx.strings.tr("ach.window").to_string();
-        let panel = MenuPanel::new(&window_title, ctx.window_size / 2.0, ctx.window_size.x - 120.0, 15);
+        let panel = achievements_panel(&window_title, ctx.window_size);
         let first_y = panel.begin(ctx.ui, &style);
         let rect = panel.panel_rect();
 
@@ -117,7 +118,7 @@ impl PongGame {
     fn draw_difficulty(&self, ctx: &mut GameContext, selection: u8) {
         let style = self.menu_style();
         let window_title = ctx.strings.tr("diff.window").to_string();
-        let panel = MenuPanel::new(&window_title, ctx.window_size / 2.0, 360.0, 3);
+        let panel = difficulty_panel(&window_title, ctx.window_size);
         let mut y = panel.begin(ctx.ui, &style);
         let items = [Difficulty::Easy, Difficulty::Medium, Difficulty::Hard];
         for (i, diff) in items.iter().enumerate() {
@@ -131,7 +132,7 @@ impl PongGame {
     fn draw_chaos(&self, ctx: &mut GameContext, selection: u8) {
         let style = self.menu_style();
         let window_title = ctx.strings.tr("chaos.window").to_string();
-        let panel = MenuPanel::new(&window_title, ctx.window_size / 2.0, 400.0, 4);
+        let panel = chaos_panel(&window_title, ctx.window_size);
         let mut y = panel.begin(ctx.ui, &style);
         for (i, mode) in ChaosMode::ALL.iter().enumerate() {
             let label = ctx.strings.tr(chaos_label_key(*mode)).to_string();
