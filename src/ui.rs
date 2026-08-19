@@ -165,12 +165,14 @@ impl PongGame {
                 self.score.right, ctx.strings.tr("hud.p2"),
             ),
         };
-        ctx.ui.label_centered(&score_text, Vec2::new(cx, 24.0));
+        // y is the text BASELINE: the top wall spans screen y 0..20 and the
+        // bottom wall (window_h-20)..window_h, so keep glyphs clear of both.
+        ctx.ui.label_centered(&score_text, Vec2::new(cx, 42.0));
 
         let theme = self.current_theme();
         if let Some(banner) = theme.banner_text {
             let color = Color::new(theme.banner_color.x, theme.banner_color.y, theme.banner_color.z, theme.banner_color.w);
-            ctx.ui.label_centered_styled(banner, Vec2::new(cx, ctx.window_size.y - 24.0), color, 16.0);
+            ctx.ui.label_centered_styled(banner, Vec2::new(cx, ctx.window_size.y - 32.0), color, 16.0);
         }
 
         if self.power_ups.speed_boost.active() {
