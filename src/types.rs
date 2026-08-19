@@ -196,7 +196,7 @@ pub(crate) struct Textures {
     pub(crate) ball: u32,
 }
 
-pub(crate) struct PongGame {
+pub struct PongGame {
     pub(crate) physics: PhysicsSystem,
     pub(crate) state: GameState,
     pub(crate) settings: MatchSettings,
