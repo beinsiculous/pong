@@ -63,7 +63,7 @@ LocaleFile(
         "ach.unlocked": "plundered",
         "ach.hidden_name": "???",
         "ach.hidden_desc": "Secret booty — plunder it to reveal",
-        "ach.hint": "ESC, SPACE, or a click to sail back",
+        "ach.hint": "W/S t' scroll the log - ESC, SPACE, or a click to sail back",
         "ach.section.cpu": "Kraken Battles",
         "ach.section.chaos": "Storm Victories",
         "ach.section.shutouts": "Flawless Voyages",

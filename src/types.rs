@@ -217,6 +217,9 @@ pub struct PongGame {
     pub(crate) debug_colliders: bool,
     /// Engine pause menu (Esc/Start toggles during a match).
     pub(crate) pause: PauseMenu,
+    /// Scroll offset (px) of the achievements page — its content is taller
+    /// than the window; W/S move it.
+    pub(crate) achievements_scroll: f32,
 }
 
 impl PongGame {
@@ -241,6 +244,7 @@ impl Default for PongGame {
             grid: None,
             debug_colliders: false,
             pause: PauseMenu::new(),
+            achievements_scroll: 0.0,
         }
     }
 }

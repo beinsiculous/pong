@@ -61,7 +61,7 @@ LocaleFile(
         "ach.unlocked": "unlocked",
         "ach.hidden_name": "???",
         "ach.hidden_desc": "Hidden — unlock to reveal",
-        "ach.hint": "ESC, SPACE, or click to go back",
+        "ach.hint": "W/S scroll - ESC, SPACE, or click to go back",
         "ach.section.cpu": "CPU Difficulty",
         "ach.section.chaos": "Chaos Mode Wins",
         "ach.section.shutouts": "Shutouts",

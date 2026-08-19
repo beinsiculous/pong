@@ -38,7 +38,10 @@ impl PongGame {
                     self.settings.mode = GameMode::TwoPlayer;
                     self.state = GameState::ChaosSelect { selection: 0 };
                 }
-                2 => self.state = GameState::Achievements,
+                2 => {
+                    self.achievements_scroll = 0.0;
+                    self.state = GameState::Achievements;
+                }
                 3 => {
                     // Language: cycle locale, then re-register achievements
                     // so their names/descriptions pick up the new language
@@ -53,6 +56,17 @@ impl PongGame {
 
     pub(crate) fn update_achievements_input(&mut self, ctx: &mut GameContext) {
         let input = MenuInput::read(ctx.input);
+        // The page is taller than the window: W/S (or a pad) scroll it.
+        const SCROLL_STEP: f32 = 36.0;
+        if input.down {
+            self.achievements_scroll += SCROLL_STEP;
+        }
+        if input.up {
+            self.achievements_scroll -= SCROLL_STEP;
+        }
+        self.achievements_scroll = self
+            .achievements_scroll
+            .clamp(0.0, crate::ui::achievements_max_scroll(ctx.window_size));
         // Whole-window dismiss: clicks on headers/margins count too, not
         // just the row bands (the page is one big info sheet).
         let click_dismiss = achievements_panel("", ctx.window_size).clicked_inside(ctx.input);

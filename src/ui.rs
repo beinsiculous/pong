@@ -11,6 +11,22 @@ use crate::achievements::DISPLAY_SECTIONS;
 use crate::menu::{achievements_panel, chaos_panel, difficulty_panel, title_panel};
 use crate::types::*;
 
+/// Pixel height of the full achievements list (headers + rows + gaps).
+pub(crate) fn achievements_content_height() -> f32 {
+    DISPLAY_SECTIONS
+        .iter()
+        .map(|(_, ids)| 22.0 + ids.len() as f32 * 36.0 + 6.0)
+        .sum()
+}
+
+/// How far the achievements page can scroll: content height minus the
+/// window's item viewport (panel minus title block, unlocked line, hint).
+pub(crate) fn achievements_max_scroll(window_size: Vec2) -> f32 {
+    let rect = achievements_panel("", window_size).panel_rect();
+    let viewport = (rect.height - 130.0).max(0.0);
+    (achievements_content_height() - viewport).max(0.0)
+}
+
 impl PongGame {
     fn menu_style(&self) -> MenuStyle {
         MenuStyle::from_theme(&self.current_theme())
@@ -68,7 +84,12 @@ impl PongGame {
         );
 
         let left = rect.x + 28.0;
-        let mut y = first_y + 18.0;
+        // Scroll window: rows outside [content_top, content_bottom] are
+        // culled — immediate-mode text would otherwise overpaint the title
+        // and hint (the panel does not clip).
+        let content_top = first_y + 12.0;
+        let content_bottom = rect.y + rect.height - 52.0;
+        let mut y = first_y + 18.0 - self.achievements_scroll;
 
         let locked_color = Color::new(0.45, 0.45, 0.5, 1.0);
         let unlocked_color = Color::new(1.0, 0.85, 0.25, 1.0);
@@ -76,8 +97,10 @@ impl PongGame {
         let header_color = Color::new(0.6, 0.75, 1.0, 1.0);
 
         for (section_key, ids) in DISPLAY_SECTIONS {
-            let section = ctx.strings.tr(section_key).to_string();
-            ctx.ui.label_styled(&section, Vec2::new(left, y), header_color, 16.0);
+            if y >= content_top && y <= content_bottom {
+                let section = ctx.strings.tr(section_key).to_string();
+                ctx.ui.label_styled(&section, Vec2::new(left, y), header_color, 16.0);
+            }
             y += 22.0;
             for id in *ids {
                 let is_unlocked = ctx.achievements.is_unlocked(id);
@@ -99,16 +122,27 @@ impl PongGame {
                     (ach.name.clone(), ach.description.clone())
                 };
 
-                ctx.ui.label_styled(
-                    &format!("{marker} {name}"),
-                    Vec2::new(left + 8.0, y),
-                    name_color,
-                    14.0,
-                );
-                ctx.ui.label_styled(&desc, Vec2::new(left + 52.0, y + 16.0), desc_color, 12.0);
+                if y >= content_top && y + 16.0 <= content_bottom {
+                    ctx.ui.label_styled(
+                        &format!("{marker} {name}"),
+                        Vec2::new(left + 8.0, y),
+                        name_color,
+                        14.0,
+                    );
+                    ctx.ui.label_styled(&desc, Vec2::new(left + 52.0, y + 16.0), desc_color, 12.0);
+                }
                 y += 36.0;
             }
             y += 6.0;
+        }
+
+        // Overflow markers: show which directions still have content.
+        let marker_x = rect.x + rect.width - 34.0;
+        if self.achievements_scroll > 0.0 {
+            ctx.ui.label_styled("^", Vec2::new(marker_x, content_top + 4.0), desc_color, 14.0);
+        }
+        if self.achievements_scroll < achievements_max_scroll(ctx.window_size) {
+            ctx.ui.label_styled("v", Vec2::new(marker_x, content_bottom + 12.0), desc_color, 14.0);
         }
 
         let hint = ctx.strings.tr("ach.hint").to_string();
