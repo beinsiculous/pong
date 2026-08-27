@@ -4,11 +4,45 @@
 use engine_core::prelude::*;
 use crate::types::*;
 
+/// The title menu's rows, in order. Both halves of the menu derive from
+/// `TITLE_ITEMS` (row count, navigation bound, confirm dispatch, drawn
+/// labels), so adding/removing a row is a one-list change. The web build
+/// drops Achievements — the site's game page shows the board instead.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum TitleItem {
+    SinglePlayer,
+    TwoPlayer,
+    Achievements,
+    Language,
+    Exit,
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub(crate) const TITLE_ITEMS: &[TitleItem] = &[
+    TitleItem::SinglePlayer,
+    TitleItem::TwoPlayer,
+    TitleItem::Achievements,
+    TitleItem::Language,
+    TitleItem::Exit,
+];
+#[cfg(target_arch = "wasm32")]
+pub(crate) const TITLE_ITEMS: &[TitleItem] = &[
+    TitleItem::SinglePlayer,
+    TitleItem::TwoPlayer,
+    TitleItem::Language,
+    TitleItem::Exit,
+];
+
+/// Row index of `item` in this build's title menu (0 if absent).
+pub(crate) fn title_index(item: TitleItem) -> u8 {
+    TITLE_ITEMS.iter().position(|i| *i == item).unwrap_or(0) as u8
+}
+
 /// Panel layouts shared by the input half (mouse hit-testing here) and the
 /// drawing half (`ui.rs`) — the geometry must match or clicks land beside
 /// the drawn rows. Titles only affect the label, never the layout.
 pub(crate) fn title_panel(title: &str, window_size: Vec2) -> MenuPanel {
-    MenuPanel::new(title, window_size / 2.0, 360.0, 5)
+    MenuPanel::new(title, window_size / 2.0, 360.0, TITLE_ITEMS.len())
 }
 pub(crate) fn achievements_panel(title: &str, window_size: Vec2) -> MenuPanel {
     MenuPanel::new(title, window_size / 2.0, window_size.x - 120.0, 15)
@@ -25,31 +59,36 @@ impl PongGame {
         let input = MenuInput::read(ctx.input);
         let mouse = title_panel("", ctx.window_size).mouse_select(ctx.input);
         let selection = mouse.hovered.unwrap_or(selection);
-        let mut selection = input.navigate(selection, 5);
+        // An out-of-range stored selection (e.g. the shorter wasm menu)
+        // clamps instead of panicking at the dispatch index below.
+        let selection = selection.min(TITLE_ITEMS.len() as u8 - 1);
+        let mut selection = input.navigate(selection, TITLE_ITEMS.len() as u8);
         if let Some(row) = mouse.clicked {
             selection = row;
         }
         self.state = GameState::TitleScreen { selection };
 
         if input.confirm || mouse.clicked.is_some() {
-            match selection {
-                0 => self.state = GameState::DifficultySelect { selection: 1 },
-                1 => {
+            match TITLE_ITEMS[selection as usize] {
+                TitleItem::SinglePlayer => {
+                    self.state = GameState::DifficultySelect { selection: 1 };
+                }
+                TitleItem::TwoPlayer => {
                     self.settings.mode = GameMode::TwoPlayer;
                     self.state = GameState::ChaosSelect { selection: 0 };
                 }
-                2 => {
+                TitleItem::Achievements => {
                     self.achievements_scroll = 0.0;
                     self.state = GameState::Achievements;
                 }
-                3 => {
+                TitleItem::Language => {
                     // Language: cycle locale, then re-register achievements
                     // so their names/descriptions pick up the new language
                     // (id-keyed insert — unlock state is untouched).
                     ctx.strings.cycle_locale();
                     crate::achievements::register_all(ctx.achievements, ctx.strings);
                 }
-                _ => ctx.exit_requested = true,
+                TitleItem::Exit => ctx.exit_requested = true,
             }
         }
     }
@@ -71,7 +110,9 @@ impl PongGame {
         // just the row bands (the page is one big info sheet).
         let click_dismiss = achievements_panel("", ctx.window_size).clicked_inside(ctx.input);
         if input.back || input.confirm || click_dismiss {
-            self.state = GameState::TitleScreen { selection: 2 };
+            self.state = GameState::TitleScreen {
+                selection: title_index(TitleItem::Achievements),
+            };
         }
     }
 

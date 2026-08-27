@@ -1,9 +1,12 @@
 //! Browser entry point: fetch all assets into the engine's VFS, then run
 //! the exact same game `main.rs` runs natively.
 //!
-//! No save paths are configured on the web, so the engine's existing
-//! fallbacks apply: in-memory achievements and default two-player input
-//! bindings (full browser persistence is the deferred H6 work).
+//! Saves persist to localStorage: on wasm the engine treats `GameConfig`
+//! save-path strings as localStorage keys (`engine_core::save_store`), so
+//! achievements and input bindings survive reloads under the
+//! `beinsiculous.games.pong.*` keys from the engine's `docs/WEB_SAVES.md`
+//! contract. Pong deliberately configures no score path — versus play has
+//! no single score to record.
 
 use engine_core::prelude::run_game;
 use engine_core::web::{init_web_logging, preload_assets, set_boot_status};
@@ -28,7 +31,10 @@ pub fn start() {
             set_boot_status(&format!("Failed to load assets: {e}"));
             return;
         }
-        if let Err(e) = run_game(crate::PongGame::default(), crate::game_config(ASSET_BASE)) {
+        let config = crate::game_config(ASSET_BASE)
+            .with_achievement_save_path("beinsiculous.games.pong.achievements")
+            .with_input_settings_path("beinsiculous.games.pong.input");
+        if let Err(e) = run_game(crate::PongGame::default(), config) {
             log::error!("failed to start game: {e}");
             set_boot_status(&format!("Failed to start: {e}"));
         }

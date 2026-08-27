@@ -8,7 +8,7 @@
 
 use engine_core::prelude::*;
 use crate::achievements::DISPLAY_SECTIONS;
-use crate::menu::{achievements_panel, chaos_panel, difficulty_panel, title_panel};
+use crate::menu::{achievements_panel, chaos_panel, difficulty_panel, title_panel, TitleItem, TITLE_ITEMS};
 use crate::types::*;
 
 /// Pixel height of the full achievements list (headers + rows + gaps).
@@ -46,15 +46,22 @@ impl PongGame {
         let style = self.menu_style();
         let strings = &ctx.strings;
         let title = strings.tr("title.window").to_string();
-        let language_item =
-            format!("{}: {}", strings.tr("title.language"), strings.current_display_name());
-        let items = [
-            strings.tr("title.single").to_string(),
-            strings.tr("title.two").to_string(),
-            strings.tr("title.achievements").to_string(),
-            language_item,
-            strings.tr("title.exit").to_string(),
-        ];
+        // Same row list the input half dispatches on — keep them in sync
+        // by construction (the wasm build has no Achievements row).
+        let items: Vec<String> = TITLE_ITEMS
+            .iter()
+            .map(|item| match item {
+                TitleItem::SinglePlayer => strings.tr("title.single").to_string(),
+                TitleItem::TwoPlayer => strings.tr("title.two").to_string(),
+                TitleItem::Achievements => strings.tr("title.achievements").to_string(),
+                TitleItem::Language => format!(
+                    "{}: {}",
+                    strings.tr("title.language"),
+                    strings.current_display_name()
+                ),
+                TitleItem::Exit => strings.tr("title.exit").to_string(),
+            })
+            .collect();
         let hint = strings.tr("title.hint").to_string();
 
         let panel = title_panel(&title, ctx.window_size);
