@@ -220,6 +220,9 @@ pub struct PongGame {
     /// Scroll offset (px) of the achievements page — its content is taller
     /// than the window; W/S move it.
     pub(crate) achievements_scroll: f32,
+    /// Beep played on every paddle hit (the H7 web-audio demo sound).
+    /// `None` when the asset is missing — the game plays silent.
+    pub(crate) paddle_beep: Option<SoundHandle>,
 }
 
 impl PongGame {
@@ -245,6 +248,7 @@ impl Default for PongGame {
             debug_colliders: false,
             pause: PauseMenu::new(),
             achievements_scroll: 0.0,
+            paddle_beep: None,
         }
     }
 }

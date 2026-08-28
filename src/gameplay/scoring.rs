@@ -96,8 +96,13 @@ impl PongGame {
                     }
                     hit_paddle = true;
                 }
-                if hit_paddle && insane {
-                    paddle_hits.push(b);
+                if hit_paddle {
+                    if let Some(beep) = self.paddle_beep {
+                        ctx.audio.play(beep).ok();
+                    }
+                    if insane {
+                        paddle_hits.push(b);
+                    }
                 }
                 let already_scored = balls_scored.iter().any(|(bb, _)| *bb == b);
                 if !already_scored {

@@ -64,6 +64,17 @@ impl Game for PongGame {
         self.textures.ball = ctx.assets.load_texture("ball_8px.png")
             .expect("missing assets/ball_8px.png").id;
 
+        // Demo SFX for the web-audio slice (engine H7): beeps on paddle hits.
+        // Missing asset is non-fatal — the game plays silent, with one warn.
+        let beep_path = std::path::Path::new(ctx.assets.base_path()).join("sounds/beep_e.wav");
+        self.paddle_beep = match ctx.audio.load_sound(&beep_path) {
+            Ok(handle) => Some(handle),
+            Err(e) => {
+                log::warn!("paddle beep failed to load: {e}");
+                None
+            }
+        };
+
         let theme = self.current_theme();
         self.playfield.background = Some(spawn_background(
             ctx.world, tex.id, theme.bg_color, Vec2::new(WIN_W, WIN_H)));
