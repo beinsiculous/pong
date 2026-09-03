@@ -88,7 +88,7 @@ impl PongGame {
                     ctx.strings.cycle_locale();
                     crate::achievements::register_all(ctx.achievements, ctx.strings);
                 }
-                TitleItem::Exit => ctx.exit_requested = true,
+                TitleItem::Exit => ctx.request_exit(),
             }
         }
     }

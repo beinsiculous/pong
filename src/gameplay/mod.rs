@@ -44,7 +44,7 @@ impl PongGame {
             match action {
                 PauseAction::Restart => { self.start_game(ctx.world); return; }
                 PauseAction::QuitToTitle => { self.reset_to_title(ctx.world); return; }
-                PauseAction::ExitGame => { ctx.exit_requested = true; return; }
+                PauseAction::ExitGame => { ctx.request_exit(); return; }
                 // Skip the rest of the frame so the resuming keypress can't
                 // leak into gameplay; the world unfreezes next frame.
                 PauseAction::Resumed => return,
