@@ -65,6 +65,13 @@ scene editor — useful for inspecting and tuning entities while the game runs:
   ...), since all entities are spawned from those constants in
   `src/spawning.rs`.
 
+## Pong as data
+
+Pong's gameplay rules and entities also exist entirely as data and Rhai scripts under
+`insiculous_2d/crates/playground/assets/projects/pong/`. The project runs in the Web Playground at
+`/playground/?project=pong`, where scene layouts, entity components, and script logic can be edited
+and verified live in the browser without recompiling Rust.
+
 ## The Deion Pivot: Tong
 
 The game you get today is the neon Geometry-Wars build above — but Pong is
