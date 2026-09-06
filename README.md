@@ -65,6 +65,8 @@ scene editor — useful for inspecting and tuning entities while the game runs:
   ...), since all entities are spawned from those constants in
   `src/spawning.rs`.
 
+The same build runs in the browser at [beinsiculous.com/playground/pong/](https://beinsiculous.com/playground/pong/): the game inside the editor, layout only — the rules are compiled in and nothing you change there persists.
+
 ## Pong as data
 
 Pong's gameplay rules and entities also exist entirely as data and Rhai scripts under

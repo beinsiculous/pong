@@ -16,7 +16,7 @@ The game depends on the `insiculous_2d` engine by relative path (`../../insiculo
 
 ## Architecture
 
-This is a single-crate game (`insiculous_pong`) built on the in-house `insiculous_2d` ECS engine. `PongGame` (in `src/types.rs`) implements the engine's `Game` trait in `src/main.rs` — `init()` spawns all entities, `update()` runs once per frame. With `--features editor` the identical game runs inside the engine's scene editor via `editor_integration::run_game_with_editor`; no game code changes between the two modes.
+This is a single-crate game (`insiculous_pong`) built on the in-house `insiculous_2d` ECS engine. `PongGame` (in `src/types.rs`) implements the engine's `Game` trait in `src/main.rs` — `init()` spawns all entities, `update()` runs once per frame. With `--features editor` the identical game runs inside the engine's scene editor via `editor_integration::run_game_with_editor`, and at `/playground/pong/` in the browser (the same feature, built by the engine's `build_wasm.sh --kind editor` and served from the site); no game code changes between the modes.
 
 `PongGame` is composed of focused sub-structs (`Playfield` entity handles, `Balls`, `Scoreboard`, `PowerUpState`, `MatchSettings`, `Textures`) rather than flat fields — keep new state in the sub-struct it belongs to.
 
