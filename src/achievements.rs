@@ -1,6 +1,7 @@
 //! Pong-specific achievement definitions and unlock logic.
 //!
-//! Registered once in `init()`; `unlock_win_achievements()` is called from the
+//! Registered through `Game::register_achievements` — the engine calls it before the window
+//! opens, which is what lets `--achievements-manifest` export the list with no GPU; `unlock_win_achievements()` is called from the
 //! game-over transition in `check_win_condition` whenever the player (left
 //! paddle / player 1) wins.
 
@@ -47,8 +48,8 @@ pub(crate) const DISPLAY_SECTIONS: &[(&str, &[&str])] = &[
 ];
 
 /// Register every Pong achievement with names/descriptions from the locale
-/// tables (`ach.<id>.name` / `ach.<id>.desc`). Called from `Game::init` AND
-/// again after a locale switch — `register` is an id-keyed insert, so
+/// tables (`ach.<id>.name` / `ach.<id>.desc`). Called from `Game::register_achievements`
+/// AND again after a locale switch — `register` is an id-keyed insert, so
 /// re-registering refreshes the display strings without touching unlock
 /// state. (Beating a higher CPU difficulty cascades to unlock easier ones —
 /// handled at unlock time, not registration.)
