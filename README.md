@@ -80,16 +80,23 @@ The game you get today is the neon Geometry-Wars build above — but Pong is
 first in line for the **Phase G Deion re-skin**, where it becomes **Tong** and
 doubles as the validation run for the engine's new sprite pipeline.
 
-The paddles become **living tong characters**: kitchen tongs with faces. The
+The paddles become **living tong characters**: upright U-shaped kitchen tongs with
+one snail-like eye on each gripping tip, no mouth and no round hinge face.
+They open upward or downward, with straight sides when closed and angled
+sides when open (Jesse’s revised brief). The
 tongs ARE the characters — the AI opponent is a tong personality, and two-player
 mode is simply a second tong. Their rounded gripping ends give each paddle a
 naturally rounded collision surface, deliberately making play less flat than
 rectangle paddles. The tong design is shared with Breakout's Food Pyramid
 re-skin, and it replaces the earlier baguette-paddle casting in DEION_STYLE §5.
 
-**Deion stays the ball.** Canon: he squash-stretches on paddle hits and his
-icicle mohawk trails behind him. A countertop court and crumb/splash particles
-are live proposals.
+**The ball is a meatball with eyes, and the goals are grills** behind the
+tongs (Jesse, Sep 9 2026, replacing the earlier Deion-as-ball casting in
+Tong). The paddles have open and closed states with animated transitions.
+A scored-on tong gets Maxwell-style angry eyebrows; the meatball has toasted
+and flaming score reactions, and the grill flares. The current art drafts
+have red/cyan grips for the opposing tongs. The countertop court remains
+a proposal; the game still uses its neon art until sprite integration.
 
 Art follows the settled style metrics (SSOT: `deion_assets/DEION_STYLE.md`
 via the repo-root symlink): 16px base cell, nearest filtering, 5× integer
@@ -103,11 +110,9 @@ ship.
 **Open questions** (answered questions move up into the theme spec above and
 get DELETED from this list — live-docs convention):
 
-- Tong character personalities and expressions — what does each tong look
-  and act like?
 - Rounded paddle collider shape — capsule vs polyline?
-- Do the two tongs get distinct designs, or is P2 a palette swap?
-- Does the ball's icicle trail interact with the deforming grid?
+- Beyond the draft red/cyan grips and mirrored poses, should the two tongs
+  develop distinct personalities?
 
 ## Project Layout
 
