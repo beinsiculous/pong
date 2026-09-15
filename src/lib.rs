@@ -41,7 +41,19 @@ pub fn game_config(asset_base: &str) -> GameConfig {
         .with_size(WIN_W as u32, WIN_H as u32)
         .with_clear_color(0.0, 0.0, 0.0, 1.0)
         .with_fps(60)
+        // The art is 1x with nearest filtering, so snapping every sprite's origin to a
+        // whole device pixel is what keeps it crisp at this window size (D1).
+        .with_pixel_snap(true)
         .with_asset_base_path(asset_base)
+}
+
+/// Load one synced sheet by the path its spec names. Fail-loud: the sheets ship with
+/// the game, so a missing or malformed one is a broken build rather than a game that
+/// silently draws nothing.
+fn load_sheet(assets: &mut AssetManager, spec: &SheetSpec) -> SpriteSheet {
+    assets
+        .load_sprite_sheet(spec.path)
+        .expect("every Tong sheet ships with the game")
 }
 
 impl Game for PongGame {
@@ -60,12 +72,19 @@ impl Game for PongGame {
         }
 
         let tex = ctx.assets.create_solid_color(1, 1, [255, 255, 255, 255]).unwrap();
-        self.textures.white = tex.id;
-        // Relative paths resolve against the asset base path set in main().
-        self.textures.paddle = ctx.assets.load_texture("paddle_16px.png")
-            .expect("missing assets/paddle_16px.png").id;
-        self.textures.ball = ctx.assets.load_texture("ball_8px.png")
-            .expect("missing assets/ball_8px.png").id;
+        self.sheets.white = tex.id;
+
+        // Every sheet's path, cell and measured anchor is in `constants.rs`'s sheets
+        // block; the PNG and its sidecar are the synced copies under `assets/sprites/`.
+        self.sheets.tong_left = load_sheet(ctx.assets, &TONG_LEFT);
+        self.sheets.tong_right = load_sheet(ctx.assets, &TONG_RIGHT);
+        self.sheets.meatball = load_sheet(ctx.assets, &MEATBALL);
+        self.sheets.grill_left = load_sheet(ctx.assets, &GRILL_LEFT);
+        self.sheets.grill_right = load_sheet(ctx.assets, &GRILL_RIGHT);
+        self.sheets.pickup_flame = load_sheet(ctx.assets, &PICKUP_FLAME);
+        self.sheets.pickup_knife = load_sheet(ctx.assets, &PICKUP_KNIFE);
+        self.sheets.court = load_sheet(ctx.assets, &COURT_TILE);
+        self.sheets.court_edge = load_sheet(ctx.assets, &COURT_EDGE);
 
         // Demo SFX for the web-audio slice (engine H7): beeps on paddle hits.
         // Missing asset is non-fatal — the game plays silent, with one warn.
@@ -78,30 +97,34 @@ impl Game for PongGame {
             }
         };
 
-        let theme = self.current_theme();
-        self.playfield.background = Some(spawn_background(
-            ctx.world, tex.id, theme.bg_color, Vec2::new(WIN_W, WIN_H)));
+        // The court first: the floor everything else stands on.
+        self.playfield.court = Some(spawn_court(ctx.world, &self.sheets.court));
 
-        // Left paddle: rounded face naturally on the right (toward the ball).
-        // Right paddle: mirror so its rounded face points left (toward the ball).
+        // Walls: one continuous collider each, drawn by a row of 64 px strips.
+        let wall_y = WIN_H / 2.0 - WALL_INSET;
+        self.playfield.wall_strips.extend(spawn_wall_strips(
+            ctx.world, &self.sheets.court_edge, &COURT_EDGE, "Top Wall Strip", wall_y));
+        self.playfield.wall_strips.extend(spawn_wall_strips(
+            ctx.world, &self.sheets.court_edge, &COURT_EDGE, "Bottom Wall Strip", -wall_y));
+        spawn_wall(ctx.world, "Top Wall", wall_y);
+        spawn_wall(ctx.world, "Bottom Wall", -wall_y);
+
         self.playfield.left_paddle = Some(spawn_paddle(
-            ctx.world, "Left Paddle", -PADDLE_X, self.textures.paddle, LEFT_COLOR, false));
+            ctx.world, "Left Paddle", -PADDLE_X, &TONG_LEFT, &self.sheets.tong_left));
         self.playfield.right_paddle = Some(spawn_paddle(
-            ctx.world, "Right Paddle", PADDLE_X, self.textures.paddle, RIGHT_COLOR, true));
+            ctx.world, "Right Paddle", PADDLE_X, &TONG_RIGHT, &self.sheets.tong_right));
+        self.playfield.left_grill = Some(spawn_grill(
+            ctx.world, "Left Grill", -GRILL_X, &GRILL_LEFT, &self.sheets.grill_left));
+        self.playfield.right_grill = Some(spawn_grill(
+            ctx.world, "Right Grill", GRILL_X, &GRILL_RIGHT, &self.sheets.grill_right));
         self.balls.primary = Some(self.spawn_ball(ctx.world, "Ball"));
 
-        let wall_y = WIN_H / 2.0 - 10.0;
-        self.playfield.walls.push(spawn_wall(
-            ctx.world, "Top Wall", Vec2::new(0.0, wall_y), WIN_W, 20.0, tex.id, theme.structure_color));
-        self.playfield.walls.push(spawn_wall(
-            ctx.world, "Bottom Wall", Vec2::new(0.0, -wall_y), WIN_W, 20.0, tex.id, theme.structure_color));
+        self.playfield.left_goal = Some(spawn_goal_sensor(ctx.world, "Left Goal", -GOAL_SENSOR_X));
+        self.playfield.right_goal = Some(spawn_goal_sensor(ctx.world, "Right Goal", GOAL_SENSOR_X));
 
-        let goal_x = WIN_W / 2.0 + 10.0;
-        self.playfield.left_goal = Some(spawn_goal_sensor(ctx.world, "Left Goal", -goal_x));
-        self.playfield.right_goal = Some(spawn_goal_sensor(ctx.world, "Right Goal", goal_x));
-
-        // Build the deforming grid background.
-        self.grid = Some(default_playfield_grid(&theme));
+        // The grid is the engine's now (D5): it simulates and draws the backdrop
+        // entity, and gameplay events queue impulses into it.
+        self.playfield.backdrop = Some(spawn_backdrop(ctx.world, &self.current_theme()));
     }
 
     fn update(&mut self, ctx: &mut GameContext) {

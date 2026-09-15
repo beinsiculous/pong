@@ -1,0 +1,22 @@
+# Tong's art, copied from deion_assets by scripts/sync_sprites.py — the only way
+# art enters this game. Run it from this repo's root:
+#
+#     python3 deion_assets/scripts/sync_sprites.py .
+#
+# and `--check` to prove the copies still match the pinned commit below (the
+# working set's scripts/check-sprite-sync.sh runs that over every game).
+#
+# The quarantined `ai_` prefix stays on the copies (D3): a paid build's
+# check_no_ai_assets.sh gate must still find them until Jesse's cleanup pass
+# turns them into hand-cleaned masters in deion_assets/sidescroller/.
+#
+# deion_assets 4f30d7f98202c1c7f19f16677baf2c21e9ad6f14
+ai/sidescroller/tong_left/ai_tong_left.png
+ai/sidescroller/tong_right/ai_tong_right.png
+ai/sidescroller/tong_meatball/ai_tong_meatball.png
+ai/sidescroller/props/tong_grill_left/ai_tong_grill_left_32x96.png
+ai/sidescroller/props/tong_grill_right/ai_tong_grill_right_32x96.png
+ai/sidescroller/props/tong_pickup_flame/ai_tong_pickup_flame_32x32.png
+ai/sidescroller/props/tong_pickup_knife/ai_tong_pickup_knife_32x32.png
+ai/sidescroller/props/tong_court_edge/ai_tong_court_edge_64x16.png
+ai/sidescroller/tiles/tong_court/ai_tong_court_64x64.png

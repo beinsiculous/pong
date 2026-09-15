@@ -5,7 +5,7 @@ LocaleFile(
     display_name: "English",
     strings: {
         // Title screen
-        "title.window": "INSICULOUS PONG",
+        "title.window": "TONG",
         "title.single": "Single Player",
         "title.two": "Two Player",
         "title.achievements": "Achievements",

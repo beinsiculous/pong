@@ -5,6 +5,35 @@ use std::collections::HashMap;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) enum Side { Left, Right }
 
+impl Side {
+    /// The other side — the tong that conceded when this one scores.
+    pub(crate) fn opposite(self) -> Side {
+        match self {
+            Side::Left => Side::Right,
+            Side::Right => Side::Left,
+        }
+    }
+}
+
+// --- the clip states --------------------------------------------------------------------
+// One name per subject: the states of each `ClipStateMachine` table, and the clips the
+// sheets' sidecars (`assets/sprites/*.sheet.ron`) declare. The sidecar is the contract —
+// a rename there is a rename here, or `transition_to` warns and the machine holds its
+// ground. The tong's `closed` clip is deliberately absent: it is the pose the collider
+// is measured from, not a state, and the chomp passes through it.
+
+pub(crate) const TONG_OPEN: &str = "open";
+pub(crate) const TONG_CLOSING: &str = "closing";
+pub(crate) const TONG_OPENING: &str = "opening";
+pub(crate) const TONG_SCORED_ON: &str = "scored_on";
+pub(crate) const MEATBALL_IDLE: &str = "idle";
+pub(crate) const MEATBALL_TOASTED: &str = "toasted";
+pub(crate) const MEATBALL_ON_FIRE: &str = "on_fire";
+pub(crate) const GRILL_IDLE: &str = "idle";
+pub(crate) const GRILL_SCORE: &str = "score";
+pub(crate) const PICKUP_IDLE: &str = "idle";
+pub(crate) const PICKUP_COLLECT: &str = "collect";
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) enum GameMode { SinglePlayer, TwoPlayer }
 
@@ -76,12 +105,38 @@ impl PowerUpKind {
 /// Handles to the long-lived playfield entities, spawned once in `init()`.
 #[derive(Default)]
 pub(crate) struct Playfield {
-    pub(crate) background: Option<EntityId>,
+    /// The court floor: a tilemap, not a sprite. Court art is never tinted, so it is
+    /// not in the theme's colour writes (there are none left).
+    pub(crate) court: Option<EntityId>,
+    /// The strips that draw each wall. The walls' colliders are separate entities with
+    /// no sprite, so nothing needs their handles.
+    pub(crate) wall_strips: Vec<EntityId>,
+    /// The engine-simulated spring grid drawn over the court (D5).
+    pub(crate) backdrop: Option<EntityId>,
     pub(crate) left_paddle: Option<EntityId>,
     pub(crate) right_paddle: Option<EntityId>,
-    pub(crate) walls: Vec<EntityId>,
+    pub(crate) left_grill: Option<EntityId>,
+    pub(crate) right_grill: Option<EntityId>,
     pub(crate) left_goal: Option<EntityId>,
     pub(crate) right_goal: Option<EntityId>,
+}
+
+impl Playfield {
+    /// The tong that defends `side`.
+    pub(crate) fn paddle(&self, side: Side) -> Option<EntityId> {
+        match side {
+            Side::Left => self.left_paddle,
+            Side::Right => self.right_paddle,
+        }
+    }
+
+    /// The grill that stands behind `side`'s tong.
+    pub(crate) fn grill(&self, side: Side) -> Option<EntityId> {
+        match side {
+            Side::Left => self.left_grill,
+            Side::Right => self.right_grill,
+        }
+    }
 }
 
 /// Every ball currently in play. The primary ball always exists during a
@@ -184,16 +239,54 @@ impl Default for MatchSettings {
     }
 }
 
-/// Texture ids loaded in `init()`.
-#[derive(Default)]
-pub(crate) struct Textures {
-    /// White 1x1 texture for walls, background, and particles.
+/// The game's art: the 1x1 white texture the particle bursts draw with, and one
+/// `SpriteSheet` per subject — its texture, how it is cut into cells, and its clips.
+///
+/// Every sheet's path, cell and measured anchor live beside each other in
+/// `constants.rs`'s sheets block; each PNG and its `.sheet.ron` sidecar is a synced
+/// copy of the deion_assets master (`assets/sprites/sync.list`), so no art here is
+/// hand-authored and no art is loaded from anywhere else.
+pub(crate) struct Sheets {
+    /// White 1x1 texture for the particle bursts.
     pub(crate) white: u32,
-    /// PNG texture for the rounded-capsule paddle sprite. The right paddle
-    /// mirrors it horizontally via a negative `Sprite.scale.x`.
-    pub(crate) paddle: u32,
-    /// PNG texture for the circular ball sprite.
-    pub(crate) ball: u32,
+    pub(crate) tong_left: SpriteSheet,
+    pub(crate) tong_right: SpriteSheet,
+    pub(crate) meatball: SpriteSheet,
+    pub(crate) grill_left: SpriteSheet,
+    pub(crate) grill_right: SpriteSheet,
+    pub(crate) pickup_flame: SpriteSheet,
+    pub(crate) pickup_knife: SpriteSheet,
+    pub(crate) court: SpriteSheet,
+    pub(crate) court_edge: SpriteSheet,
+}
+
+/// A sheet with no texture, one cell and no clips. `Sheets::default` holds these until
+/// `init()` loads the real ones: the engine builds the game with `Default` and calls
+/// `init` on the first frame, before any entity that could draw exists.
+fn placeholder_sheet() -> SpriteSheet {
+    SpriteSheet {
+        texture: TextureHandle { id: 0 },
+        grid: SheetGrid::new(1, 1),
+        clips: Vec::new(),
+        path: String::new(),
+    }
+}
+
+impl Default for Sheets {
+    fn default() -> Self {
+        Self {
+            white: 0,
+            tong_left: placeholder_sheet(),
+            tong_right: placeholder_sheet(),
+            meatball: placeholder_sheet(),
+            grill_left: placeholder_sheet(),
+            grill_right: placeholder_sheet(),
+            pickup_flame: placeholder_sheet(),
+            pickup_knife: placeholder_sheet(),
+            court: placeholder_sheet(),
+            court_edge: placeholder_sheet(),
+        }
+    }
 }
 
 pub struct PongGame {
@@ -204,13 +297,15 @@ pub struct PongGame {
     pub(crate) balls: Balls,
     pub(crate) score: Scoreboard,
     pub(crate) power_ups: PowerUpState,
-    pub(crate) textures: Textures,
+    pub(crate) sheets: Sheets,
     pub(crate) frame_count: u32,
 
-    /// Deforming spring-mass grid drawn under the gameplay sprites.
-    /// Built in `init()` after we know the chaos mode (the grid color is
-    /// theme-specific).
-    pub(crate) grid: Option<GridMesh>,
+    /// Every detached effect entity — a collected pickup's puff, a scored ball's fire.
+    /// They are sprite-only and end themselves (a clip's `Despawn`, or `Lifetime`), so
+    /// an id in here may already be gone from the world. Cleared by the serve and by
+    /// every reset, but **not** by `respawn_for_serve`: a goal's fire is meant to burn
+    /// through `Serving` until the next ball is launched.
+    pub(crate) transient_visuals: Vec<EntityId>,
     /// When true, every collider in the world is outlined in bright magenta
     /// lines. Toggle with F1. Useful for confirming collider geometry lines
     /// up with sprite art.
@@ -242,9 +337,9 @@ impl Default for PongGame {
             balls: Balls::default(),
             score: Scoreboard::default(),
             power_ups: PowerUpState::default(),
-            textures: Textures::default(),
+            sheets: Sheets::default(),
             frame_count: 0,
-            grid: None,
+            transient_visuals: Vec::new(),
             debug_colliders: false,
             pause: PauseMenu::new(),
             achievements_scroll: 0.0,

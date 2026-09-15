@@ -1,8 +1,9 @@
 //! Visual effect presets — particle configs.
 //!
 //! Centralizes the look of each event (paddle hit, goal explosion) so tuning
-//! happens in one place. The deforming grid uses the engine's
-//! `default_playfield_grid` preset directly.
+//! happens in one place. The backdrop grid is not here: it is a `GridBackdrop` entity
+//! the engine simulates and draws (see `spawning::spawn_backdrop`), and gameplay events
+//! reach it by queueing an impulse rather than by building vertices.
 
 use engine_core::prelude::*;
 

@@ -45,7 +45,7 @@ impl PongGame {
     }
 
     /// Multi-ball power-up: spawn a new ball at the source ball's position,
-    /// fired toward the opposite side, tinted to match its source.
+    /// fired toward the opposite side — the meatball visibly splits.
     pub(crate) fn spawn_extra_ball(&mut self, ctx: &mut GameContext, source_ball: EntityId) {
         let pos = entity_position(ctx.world, source_ball).unwrap_or(Vec2::ZERO);
         let source_vx = self.physics.get_body_velocity(source_ball)
@@ -64,14 +64,6 @@ impl PongGame {
         let dir_x = if source_vx >= 0.0 { -1.0 } else { 1.0 };
         let dir = serve_direction(self.frame_count, 0xB5297A4D, dir_x);
         self.physics.set_velocity(entity, dir * BALL_INITIAL_SPEED, 0.0);
-
-        // Match source ball color
-        if let Some(source_sprite) = ctx.world.get::<Sprite>(source_ball) {
-            let color = source_sprite.color;
-            if let Some(sprite) = ctx.world.get_mut::<Sprite>(entity) {
-                sprite.color = color;
-            }
-        }
 
         self.balls.extras.push(entity);
     }

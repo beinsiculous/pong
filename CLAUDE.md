@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 cargo run                     # play the game
 cargo run --features editor   # run the game inside the engine's scene editor
 cargo build                   # compile check
-cargo test                    # run tests (in src/achievements.rs — incl. locale-file parity)
+cargo test                    # run tests (inline modules, incl. the locale-file parity check)
 cargo test <test_name>        # run a single test
 ```
 
@@ -18,7 +18,7 @@ The game depends on the `insiculous_2d` engine by relative path (`../../insiculo
 
 This is a single-crate game (`insiculous_pong`) built on the in-house `insiculous_2d` ECS engine. `PongGame` (in `src/types.rs`) implements the engine's `Game` trait in `src/main.rs` — `init()` spawns all entities, `update()` runs once per frame. With `--features editor` the identical game runs inside the engine's scene editor via `editor_integration::run_game_with_editor`, and at `/playground/pong/` in the browser (the same feature, built by the engine's `build_wasm.sh --kind editor` and served from the site); no game code changes between the modes.
 
-`PongGame` is composed of focused sub-structs (`Playfield` entity handles, `Balls`, `Scoreboard`, `PowerUpState`, `MatchSettings`, `Textures`) rather than flat fields — keep new state in the sub-struct it belongs to.
+`PongGame` is composed of focused sub-structs (`Playfield` entity handles, `Balls`, `Scoreboard`, `PowerUpState`, `MatchSettings`, `Sheets`) rather than flat fields — keep new state in the sub-struct it belongs to.
 
 **State machine drives everything.** `GameState` (types.rs) is matched at the top of `update()` in main.rs: the menu states (`TitleScreen`, `DifficultySelect`, `ChaosSelect`, `Achievements`) dispatch to handlers in `menu.rs`; everything else (`Serving`, `Playing`, `GameOver`) falls through to `update_gameplay()` in `gameplay/mod.rs`, which orchestrates the per-frame steps implemented across `gameplay/{paddles,balls,scoring,flow}.rs`. Match flow is Title → Difficulty (single-player only) → Chaos select → Serving ↔ Playing → GameOver; match-lifecycle transitions (serve, start, reset-to-title) live in `gameplay/flow.rs`.
 
@@ -28,27 +28,82 @@ This is a single-crate game (`insiculous_pong`) built on the in-house `insiculou
 
 **Coordinate and scale conventions (the main trap):**
 - World origin is screen center; window is 800×600 (`WIN_W`/`WIN_H`).
-- The renderer multiplies `Transform2D.scale` by `RENDER_UNIT = 80.0` to get pixel size — that's why sprite scales are `size / 80.0`.
+- The renderer multiplies `Transform2D.scale` by `RENDER_UNIT = 80.0` to get pixel size — that's why sprite scales are `cell / 80.0`.
+- `Sprite.offset` is where the cell's centre sits relative to the entity, in world units, Y up — the measured anchors ride on it (see the Tong section).
 - Collider shapes use **absolute pixels** and ignore `Transform2D.scale` entirely. Sprites and colliders are sized through different paths, so they can silently diverge. `F1` in-game (or `C` in the editor) overlays collider outlines to check.
 
-**All tuning lives in `src/constants.rs`** (sizes, speeds, colors, power-up timing) and all entity creation lives in `src/spawning.rs`, spawned from those constants. Values tuned live in the editor inspector must be copied back into constants.rs to persist.
+**All tuning lives in `src/constants.rs`** (sizes, speeds, colours, the sheets block, power-up timing) and all entity creation lives in `src/spawning.rs`, spawned from those constants. Values tuned live in the editor inspector must be copied back into constants.rs to persist.
 
-**Chaos modes** (Normal / Insane / Ridiculous / Insiculous) are an engine-provided `ChaosMode` enum. Insane doubles a per-ball speed multiplier (`ball_speed_mult: HashMap<EntityId, f32>`) on each paddle hit; Ridiculous starts with a second ball in `extra_balls`; Insiculous is both. `chaos_theme.rs` maps each mode to a color theme applied at spawn time, so the theme is only fully applied on a fresh `init()`/match.
+**Chaos modes** (Normal / Insane / Ridiculous / Insiculous) are an engine-provided `ChaosMode` enum. Insane doubles a per-ball speed multiplier (`ball_speed_mult: HashMap<EntityId, f32>`) on each paddle hit; Ridiculous starts with a second ball in `extra_balls`; Insiculous is both. `chaos_theme.rs` (engine) maps each mode to a color theme: its grid colour reaches the backdrop grid at match start (`start_game` — the mode is picked after `init()`), its `particle_count_mult` and accent colour reach the particle bursts every frame, and **nothing tints the art** — the sprites are the sheets' own colours.
 
-**Visuals:** the Geometry-Wars look comes from `Sprite::with_emissive` values feeding the engine's bloom (ball 2.5, paddles 1.5, walls 0.6) plus a spring-mass deforming grid (`effects.rs`) whose line vertices are pushed into `ctx.lines` every frame after gameplay, so it reacts to that frame's collisions.
+**Visuals:** the art is the Deion sheets, drawn 1× and snapped. Every art sprite is white with emissive 0, so the neon build's bloom is gone with it. What is left of the Geometry-Wars look is the **backdrop grid**: `init()` spawns one entity carrying the engine's `GridBackdrop` (over-sprites, the theme's grid colour at a low alpha — D5), the engine simulates and draws it, and gameplay queues impulses into it through `ripple_grid`. The only line-buffer work the game still pushes itself is `gameplay/mod.rs`'s collider overlay, for F1.
 
 **Paths:** assets and saves resolve through `game_root()` in main.rs (exe directory if it contains `assets/`, else `CARGO_MANIFEST_DIR`), so `cargo run` works from any cwd. Achievements persist to `saves/pong_achievements.json`; achievement definitions and unlock logic live in `achievements.rs` and register with the engine's achievement system in `register_achievements()`, which the engine calls before the window opens; `cargo run -- --achievements-manifest <path>` exports the list.
 
 **Localization (Jul 2026):** every player-facing string goes through `ctx.strings.tr("key")`; the tables live in `assets/locales/{en,pirate}.ron` (engine loads them via the default `locales` dir under the asset base). Both files MUST define the same key set — `locale_files_have_matching_keys` in achievements.rs enforces it. The title menu's "Language" item cycles locales and re-registers achievements (id-keyed insert refreshes names/descriptions without touching unlocks; keys are `ach.<id>.name`/`ach.<id>.desc`). Pirate's locale file names `fonts/BlackSamsGold-ej5e.ttf`, so switching also swaps the game font. The pause overlay localizes via `PauseMenu::draw_labeled` + `PauseMenuLabels`; difficulty/chaos menu labels come from `Difficulty::label_key()` / `chaos_label_key()` in types.rs.
 
-## The Deion Re-skin (Phase G): Tong
+## Tong (landed 2026-09-15)
 
-Planned identity — the game still ships the neon look today. Pong is FIRST in the Phase G re-skin order: it validates the sprite pipeline before the other five games follow.
+Pong is the **first of the six Phase G Deion re-skins**, and the build is no longer neon: the
+paddles are **living tongs**, the ball is a **meatball with eyes**, the goals are **grills**
+behind them, the floor is a **countertop tile** and the walls are **rails**. In-game the game is
+**Tong** (`title.window` in both locale files); the site still lists it as *Insiculous Pong*, and
+that stays until `insiculous_web#64` rules.
 
-- **New title: Tong.** The paddles become **living tong characters** — upright U-shaped kitchen tongs with one eye on each gripping tip and no mouth or round hinge face (Jesse’s revised brief). They open upward or downward; their long edges are straight when closed and angled when open. Their rounded gripping ends give the paddles a naturally ROUNDED collision surface, deliberately making gameplay less flat than rectangle paddles. The tong paddle art/design is SHARED with Breakout's Food Pyramid re-skin.
-- **The ball is a meatball with eyes** (Jesse, Sep 9 2026, superseding Deion-as-ball in Tong only). Goals are **grills behind the tongs**. Tongs have open/closed states and opening/closing transitions; a tong that concedes a goal gets Maxwell-style angry eyebrows. The meatball has toasted and on-fire score reactions, and grills flare on a score. Draft Aseprite masters and clip names live in DEION_STYLE §9; these animations are not yet wired into the neon game.
-- **Style SSOT:** `deion_assets/DEION_STYLE.md` via the `deion_assets -> ../../deion_assets` symlink (the working set's layout — the Cargo path dep `../../insiculous_2d` already requires it). Settled metrics: 16px base cell, nearest filtering, 5× integer scale to RENDER_UNIT=80, one art cell = one world unit; never fake a footprint via `Transform2D.scale`. IMPORTANT physics note for the re-skin: colliders are absolute pixels and ignore scale — a rounded tong paddle likely means a capsule/rounded collider decision at re-skin time (a collider audit is part of Phase G's definition of done).
-- **Runtime assets arrive ONLY via the deion_assets sync copy into `assets/sprites/`** (F2, not yet built) — never symlink or hand-copy art in. AI art is quarantined (`ai_` prefix, `deion_assets/ai/` only) — tiered ship rule (DEION_STYLE.md §6, Aug 19 2026): may ship in FREE web builds, never in paid/marketplace builds; `deion_assets/scripts/check_no_ai_assets.sh` must pass on any paid release's asset tree. Sheet clip names are the stable API.
+- **Art enters only through the sync.** `assets/sprites/sync.list` pins the `deion_assets` commit
+  and lists the nine sources; `python3 deion_assets/scripts/sync_sprites.py .` copies each PNG and
+  its `.sheet.ron` sidecar in, and `--check` hashes the copies against the pinned blobs. Never
+  hand-copy or hand-edit a file there — fix the master in `deion_assets` and re-sync. The working
+  set's `scripts/check-sprite-sync.sh` runs that check over every game and prints `pong OK` (the
+  other five have no sync list yet).
+- **The sheets block** in `src/constants.rs` names each sheet once (`SheetSpec`): its path, its
+  cell, and the opaque bounds of the reference frame the collider is measured from. The cell
+  drives the draw scale; the bounds drive the collider and the `Sprite.offset` that lands the art
+  on it. Nothing is sized by guess, and nothing is faked through `Transform2D.scale`.
+
+  | subject | cell | collider | anchor |
+  |---|---|---|---|
+  | tong (left / right) | 64×96 | capsule 22×78 (`capsule_y(78, 11)` — the engine's constructor takes the total height) | centred |
+  | meatball | 48×64 | circle r 15.5 | (−0.5, +10.5) — the body sits low, fire above it |
+  | grill | 32×96 | none — the goal sensor scores | centred |
+  | pickup (flame / knife) | 32×32 | circle r 12 (the unchanged `POWERUP_SIZE`) | centred; the art's own 1 px is deliberately not applied |
+  | court tile / wall rail | 64×64 / 64×16 | none | centred |
+
+- **Animation is the engine's `ClipStateMachine`** — the game declares a table and never polls a
+  clip. The state names are constants in `src/types.rs`, and they are the sidecars' clip names: a
+  rename in the art is a rename in the table.
+
+  | subject | table |
+  |---|---|
+  | tong | `open` (Stay) · `closing` → `opening` · `opening` → `open` · `scored_on` → `open` |
+  | meatball | `idle` (Stay) · `toasted` (Stay) |
+  | grill | `idle` (Stay) · `score` → `idle` |
+  | pickup | `idle` (Stay); the puff it leaves plays `collect` → despawn |
+
+  A contact chomps a tong **only from `open`**: a ball arriving mid-chomp still bounces (the
+  physics is the physics) and neither restarts the clip nor stacks a second chomp. A goal against
+  sets `scored_on`, which outranks a contact, flares the grill behind that tong, and burns the
+  meatball where it crossed. The **flame** toasts the meatball it catches (the Insane speed step
+  no longer does) and the boost's expiry is what un-toasts it; the **knife**'s extra ball spawns
+  from the collecting ball, so the meatball visibly splits.
+- **1× and pixel-snapped** (`GameConfig::with_pixel_snap(true)`, D1): one art pixel per window
+  pixel at `RENDER_UNIT = 80`, nearest filtering, no faked scale. Every art sprite is drawn white
+  with emissive 0 — only the particle bursts keep a paddle-side colour.
+- **The measured playfield** (all in `src/constants.rs`, derived from the art in
+  `review/art-revamp/report-4.md`): the goal line is the court's edge (`COURT_HALF_W = 400`) and
+  the goal sensor's box begins on it at `GOAL_SENSOR_X = 410`; the walls' inner face is at ±280;
+  the tongs stand at `PADDLE_X = 350`, far enough in that a meatball resting on a tong is not
+  already inside the sensor and the tong's whole 64 px cell clears it; `PADDLE_MAX_Y = 241` puts
+  the tong's art top on the wall's face; `GRILL_X = 384` puts a grill's cell flush with the goal
+  line. Inline tests in `constants.rs` pin those relations.
+- **Style SSOT:** `deion_assets/DEION_STYLE.md` via the `deion_assets -> ../../deion_assets`
+  symlink (the working set's layout — the Cargo path dep `../../insiculous_2d` already requires
+  it). AI art is quarantined (`ai_` prefix, `deion_assets/ai/` only) — tiered ship rule
+  (DEION_STYLE.md §6, Aug 19 2026): may ship in FREE web builds, never in paid/marketplace builds.
+  **Tong is free-tier only until Jesse's cleanup pass** (D3): the synced copies keep their `ai_`
+  prefix, so `deion_assets/scripts/check_no_ai_assets.sh assets` fails on a paid build, as it
+  must. The exit is a hand-cleaned master under `deion_assets/sidescroller/…`, re-exported without
+  the prefix, with the `sync.list` line moved to it.
 
 ## Work tracking
 

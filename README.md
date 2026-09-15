@@ -1,8 +1,8 @@
 # Insiculous Pong
 
-Neon Pong built on the [insiculous_2d](../../insiculous_2d) engine — bloom-heavy
-Geometry-Wars look, a spring-mass deforming grid background, power-ups,
-achievements, and the engine's signature chaos modes.
+**Tong** — the Deion re-skin of Pong, built on the [insiculous_2d](../../insiculous_2d)
+engine: tongs for paddles, a meatball with eyes for the ball, grills for goals, a
+countertop court, power-ups, achievements, and the engine's signature chaos modes.
 
 ## Running
 
@@ -74,45 +74,37 @@ Pong's gameplay rules and entities also exist entirely as data and Rhai scripts 
 `/playground/?project=pong`, where scene layouts, entity components, and script logic can be edited
 and verified live in the browser without recompiling Rust.
 
-## The Deion Pivot: Tong
+## Tong: the Deion re-skin
 
-The game you get today is the neon Geometry-Wars build above — but Pong is
-first in line for the **Phase G Deion re-skin**, where it becomes **Tong** and
-doubles as the validation run for the engine's new sprite pipeline.
+Pong is the first of the six **Phase G Deion re-skins**, and the neon Geometry-Wars build is
+gone — this is **Tong**. The paddles are living kitchen tongs with an eye on each gripping tip,
+the ball is a **meatball with eyes**, and the **goals are grills** behind the tongs, on a
+countertop court between two rails. The art came from Jesse's Sep 9 2026 brief, drawn in
+Aseprite, and lives in `deion_assets` (DEION_STYLE §9); the tong design is shared with
+Breakout's Food Pyramid re-skin.
 
-The paddles become **living tong characters**: upright U-shaped kitchen tongs with
-one snail-like eye on each gripping tip, no mouth and no round hinge face.
-They open upward or downward, with straight sides when closed and angled
-sides when open (Jesse’s revised brief). The
-tongs ARE the characters — the AI opponent is a tong personality, and two-player
-mode is simply a second tong. Their rounded gripping ends give each paddle a
-naturally rounded collision surface, deliberately making play less flat than
-rectangle paddles. The tong design is shared with Breakout's Food Pyramid
-re-skin, and it replaces the earlier baguette-paddle casting in DEION_STYLE §5.
+- **A rally chomps.** A tong touched by the ball shuts and reopens — `closing`, then `opening`,
+  back to `open` — and a tong that concedes a goal wears its angry pose while the grill behind
+  it flares. Those are the engine's clip state machine's states: the art's clips, cut into the
+  sheets, driven by a table the game declares.
+- **The meatball burns.** A scored meatball catches fire where it crossed and burns on through
+  the next serve; the flame pickup toasts it for as long as the speed boost runs, and the knife
+  pickup splits it in two.
+- **1× art, pixel-snapped.** One art pixel is one window pixel, nearest-filtered, no faked
+  scale and no bloom over the top. The spring-mass grid still ripples over the countertop.
+- **Art arrives only through the sync.** `assets/sprites/sync.list` pins the `deion_assets`
+  commit it came from, and `python3 deion_assets/scripts/sync_sprites.py .` copies each sheet in;
+  the working set's `scripts/check-sprite-sync.sh` proves a game's copies still match that pin.
+  The copies keep their `ai_` prefix, so this build is free-tier until the hand-cleaning pass
+  (DEION_STYLE §6).
+- **The site's entry still says *Insiculous Pong*** (slug `pong`): what the shopfront calls the
+  game is M and Jesse's call (`insiculous_web#64`).
 
-**The ball is a meatball with eyes, and the goals are grills** behind the
-tongs (Jesse, Sep 9 2026, replacing the earlier Deion-as-ball casting in
-Tong). The paddles have open and closed states with animated transitions.
-A scored-on tong gets Maxwell-style angry eyebrows; the meatball has toasted
-and flaming score reactions, and the grill flares. The current art drafts
-have red/cyan grips for the opposing tongs. The countertop court remains
-a proposal; the game still uses its neon art until sprite integration.
-
-Art follows the settled style metrics (SSOT: `deion_assets/DEION_STYLE.md`
-via the repo-root symlink): 16px base cell, nearest filtering, 5× integer
-scale to `RENDER_UNIT = 80` — one art cell = one world unit, never faked via
-`Transform2D.scale`. Because colliders are absolute pixels and ignore scale,
-the rounded tong paddle forces a collider-shape decision at re-skin time
-(part of Phase G's definition of done). Runtime art arrives only through the
-deion_assets sync copy into `assets/sprites/`; AI-generated stand-ins never
-ship.
-
-**Open questions** (answered questions move up into the theme spec above and
+**Open questions** (answered questions move up into the spec above and
 get DELETED from this list — live-docs convention):
 
-- Rounded paddle collider shape — capsule vs polyline?
-- Beyond the draft red/cyan grips and mirrored poses, should the two tongs
-  develop distinct personalities?
+- The two tongs are drawn as a pair, left and right. Should they also develop
+  distinct personalities?
 
 ## Project Layout
 
@@ -123,14 +115,14 @@ src/
 ├── types.rs         # PongGame state (Playfield, Balls, Scoreboard, ...) and enums
 ├── spawning.rs      # All entity creation, each entity Named for the editor
 ├── gameplay/
-│   ├── mod.rs       # Match update loop orchestration, grid step/ripple
+│   ├── mod.rs       # Match update loop orchestration, clip states, collider overlay
 │   ├── paddles.rs   # Player paddle control and CPU AI
 │   ├── balls.rs     # Ball speed maintenance, extra-ball spawn/teardown
 │   ├── scoring.rs   # Goal detection, point awards, win condition
 │   └── flow.rs      # Serve/game-over input, match start/reset, visibility
 ├── menu.rs          # Title / difficulty / chaos / achievements navigation
 ├── power_ups.rs     # Power-up timing and pickup effects
-├── effects.rs       # Deforming grid background, hit effects
+├── effects.rs       # Particle presets for paddle hits and goals
 ├── chaos_theme.rs   # Per-chaos-mode color themes
 ├── achievements.rs  # Achievement definitions
 └── ui.rs            # Menu screens and in-match HUD text

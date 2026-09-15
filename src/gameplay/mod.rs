@@ -11,6 +11,7 @@ mod paddles;
 mod scoring;
 
 use engine_core::prelude::*;
+use crate::constants::*;
 use crate::types::*;
 
 pub(crate) fn entity_position(world: &World, entity: EntityId) -> Option<Vec2> {
@@ -19,6 +20,28 @@ pub(crate) fn entity_position(world: &World, entity: EntityId) -> Option<Vec2> {
 
 pub(crate) fn entity_y(world: &World, entity: EntityId) -> f32 {
     world.get::<Transform2D>(entity).map(|t| t.position.y).unwrap_or(0.0)
+}
+
+/// Whether `entity`'s clip machine is in `state`. False for an entity with no machine,
+/// and for one that has already despawned itself — a detached effect's clip ends it,
+/// so callers must never assume a handle they hold is still live.
+pub(crate) fn clip_state_is(world: &World, entity: EntityId, state: &str) -> bool {
+    world.get::<ClipStateMachine>(entity).is_some_and(|machine| machine.state() == state)
+}
+
+/// Move `entity`'s clip machine to `state`. An entity without one is left alone, as is
+/// an unknown state name (the machine warns and holds its ground). Re-asserting the
+/// state the machine is already in does not restart its clip.
+pub(crate) fn set_clip_state(world: &mut World, entity: EntityId, state: &str) {
+    if let Some(machine) = world.get_mut::<ClipStateMachine>(entity) {
+        let _ = machine.transition_to(state);
+    }
+}
+
+/// Push a radial shockwave into the court's backdrop grid (paddle hits, goals). The
+/// engine applies it to every backdrop on its next running frame.
+pub(crate) fn ripple_grid(world: &mut World, position: Vec2, strength: f32, radius: f32) {
+    ripple(world, GridImpulse::Radial { position, strength, radius, attractive: false });
 }
 
 impl PongGame {
@@ -51,11 +74,10 @@ impl PongGame {
                 PauseAction::Idle => {}
             }
             if self.pause.is_active() {
-                // Keep the frozen scene visible under the pause overlay:
-                // re-emit the grid without advancing it (dt 0).
-                engine_core::grid::step_and_emit_grid(
-                    self.grid.as_mut(), ctx.world, ctx.lines, 0.0, self.debug_colliders,
-                );
+                // The frozen scene stays visible under the pause overlay: the engine
+                // holds the backdrop grid still with the rest of the world (it steps on
+                // the time-scaled delta), so only the collider overlay is still ours.
+                self.emit_collider_overlay(ctx);
                 return;
             }
         }
@@ -73,25 +95,19 @@ impl PongGame {
         self.check_goals(ctx, &collisions);
         self.check_powerup_collisions(ctx, &collisions);
         self.update_powerup_spawns(ctx);
-        self.update_speed_boost(ctx.delta_time);
+        self.update_speed_boost(ctx);
         self.check_win_condition(ctx);
 
-        // Step + render the deforming grid after gameplay so it reacts to
-        // this frame's collisions.
-        engine_core::grid::step_and_emit_grid(
-            self.grid.as_mut(), ctx.world, ctx.lines, ctx.delta_time, self.debug_colliders,
-        );
+        self.emit_collider_overlay(ctx);
     }
 
-    /// Push a radial shockwave into the deforming grid (paddle hits, goals).
-    pub(crate) fn ripple_grid(&mut self, position: Vec2, strength: f32, radius: f32) {
-        if let Some(grid) = self.grid.as_mut() {
-            grid.apply_impulse(&GridImpulse::Radial {
-                position,
-                strength,
-                radius,
-                attractive: false,
-            });
+    /// Outline every collider in bright magenta while F1 is on. The backdrop grid is
+    /// the engine's to draw now, so the collider overlay is the only line-buffer work
+    /// the game still owns — and it draws last, over the grid and the art.
+    pub(crate) fn emit_collider_overlay(&self, ctx: &mut GameContext) {
+        if self.debug_colliders {
+            debug::draw_colliders(
+                ctx.world, ctx.lines, DEBUG_COLLIDER_COLOR, DEBUG_COLLIDER_EMISSIVE);
         }
     }
 }

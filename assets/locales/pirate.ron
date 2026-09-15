@@ -7,7 +7,7 @@ LocaleFile(
     font: Some("fonts/BlackSamsGold-ej5e.ttf"),
     strings: {
         // Title screen
-        "title.window": "INSICULOUS PONG O' THE SEAS",
+        "title.window": "TONG O' THE SEAS",
         "title.single": "Lone Buccaneer",
         "title.two": "Duel o' Deckhands",
         "title.achievements": "Trophies o' Plunder",
