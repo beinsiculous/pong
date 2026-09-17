@@ -104,8 +104,8 @@ impl PongGame {
     /// the hit (and an Insane-mode one doubles that ball's speed), and any ball that
     /// crossed a goal sensor is reported with who gets the point.
     ///
-    /// Reads no context of its own: what a hit looks and sounds like is the pass that
-    /// draws it, and what is decided here is which events were hits at all.
+    /// Reads no context of its own: what a hit looks like is the pass that draws it,
+    /// and what is decided here is which events were hits at all.
     pub(crate) fn handle_paddle_hits_and_collect_goals(
         &mut self,
         collisions: &[CollisionData],
@@ -169,9 +169,6 @@ impl PongGame {
 
         let mut hit_events: Vec<(Vec2, Vec4, Vec2)> = Vec::new();
         for &(ball, side) in hits {
-            if let Some(beep) = self.paddle_beep {
-                ctx.audio.play(beep).ok();
-            }
             let (paddle_color, paddle_x) = match side {
                 Side::Left => (LEFT_COLOR, -PADDLE_X),
                 Side::Right => (RIGHT_COLOR, PADDLE_X),

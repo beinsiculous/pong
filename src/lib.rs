@@ -87,17 +87,6 @@ impl Game for PongGame {
         self.sheets.court = load_sheet(ctx.assets, &COURT_TILE);
         self.sheets.court_edge = load_sheet(ctx.assets, &COURT_EDGE);
 
-        // Demo SFX for the web-audio slice (engine H7): beeps on paddle hits.
-        // Missing asset is non-fatal — the game plays silent, with one warn.
-        let beep_path = std::path::Path::new(ctx.assets.base_path()).join("sounds/beep_e.wav");
-        self.paddle_beep = match ctx.audio.load_sound(&beep_path) {
-            Ok(handle) => Some(handle),
-            Err(e) => {
-                log::warn!("paddle beep failed to load: {e}");
-                None
-            }
-        };
-
         // The court first: the floor everything else stands on.
         self.playfield.court = Some(spawn_court(ctx.world, &self.sheets.court));
 
