@@ -139,6 +139,7 @@ pub(crate) const GOAL_SENSOR_X: f32 = COURT_HALF_W + GOAL_SENSOR_W / 2.0;
 pub(crate) const PADDLE_W: f32 = TONG_CLOSED_BOUNDS.1.x - TONG_CLOSED_BOUNDS.0.x;
 pub(crate) const PADDLE_H: f32 = TONG_CLOSED_BOUNDS.1.y - TONG_CLOSED_BOUNDS.0.y;
 
+
 /// The meatball's collider: the body's measured width, and one circle on it.
 pub(crate) const BALL_SIZE: f32 = MEATBALL_BODY_BOUNDS.1.x - MEATBALL_BODY_BOUNDS.0.x;
 pub(crate) const BALL_RADIUS: f32 = BALL_SIZE / 2.0;
@@ -214,11 +215,24 @@ mod tests {
         collect_machine, goal_fire_machine, grill_machine, meatball_machine, pickup_machine,
         tong_machine,
     };
+    use crate::types::{Facing, Jaw};
     use engine_core::assets::sprite_sheet::prepare_sheet;
 
     /// The reference frame's opaque size, as the sheet declares it.
     fn footprint(spec: &SheetSpec) -> Vec2 {
         spec.bounds.1 - spec.bounds.0
+    }
+
+    /// Every tong machine a sheet has to answer for: both facings, at both jaws a tong
+    /// can rest at.
+    fn tong_machines() -> Vec<ClipStateMachine> {
+        let mut machines = Vec::new();
+        for facing in [Facing::Up, Facing::Down] {
+            for rest in [Jaw::Open, Jaw::Closed] {
+                machines.push(tong_machine(facing, rest));
+            }
+        }
+        machines
     }
 
     #[test]
@@ -230,8 +244,8 @@ mod tests {
         // wrong grid, not as a silently stretched sprite.
         let base = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("assets");
         let sheets = [
-            (&TONG_LEFT, vec![tong_machine()], (4, 4)),
-            (&TONG_RIGHT, vec![tong_machine()], (4, 4)),
+            (&TONG_LEFT, tong_machines(), (4, 7)),
+            (&TONG_RIGHT, tong_machines(), (4, 7)),
             (&MEATBALL, vec![meatball_machine(), goal_fire_machine()], (4, 3)),
             (&GRILL_LEFT, vec![grill_machine()], (4, 2)),
             (&GRILL_RIGHT, vec![grill_machine()], (4, 2)),

@@ -70,6 +70,9 @@ impl PongGame {
         self.destroy_all_powerups(world);
         self.power_ups = PowerUpState::default();
         self.balls.speed_mult.clear();
+        // The difficulty is only known now, so this is where each tong's jaw is laid
+        // the way the match rests it — Easy's CPU shut, everything else open.
+        self.lay_tong_jaws(world);
         self.apply_backdrop_theme(world);
         // A restart reuses the meatball already in play: one that was still toasted when
         // the last match ended — its boost long stopped — would otherwise stay toasted

@@ -9,6 +9,7 @@
 
 use engine_core::prelude::*;
 use crate::constants::*;
+use crate::jaw::jaw_collider;
 use crate::types::*;
 
 /// The components every animated art entity carries: the sheet's first cell as its
@@ -18,29 +19,32 @@ fn art_components(sheet: &SpriteSheet, spec: &SheetSpec) -> (Sprite, SpriteAnima
     (sheet.sprite().with_offset(spec.sprite_offset()), sheet.animation())
 }
 
-/// A tong's states. A contact chomps — `closing` runs into `opening` and back to
-/// `open` — and a goal against plays `scored_on` before returning to `open`. The
-/// `closed` clip is the pose the collider is measured from, not a state: the chomp
-/// passes through it.
-pub(crate) fn tong_machine() -> ClipStateMachine {
-    ClipStateMachine::new(
-        TONG_OPEN,
-        vec![
-            (TONG_OPEN.to_string(), ClipState::staying(TONG_OPEN)),
-            (
-                TONG_CLOSING.to_string(),
-                ClipState::new(TONG_CLOSING, OnFinished::Next(TONG_OPENING.to_string())),
-            ),
-            (
-                TONG_OPENING.to_string(),
-                ClipState::new(TONG_OPENING, OnFinished::Next(TONG_OPEN.to_string())),
-            ),
-            (
-                TONG_SCORED_ON.to_string(),
-                ClipState::new(TONG_SCORED_ON, OnFinished::Next(TONG_OPEN.to_string())),
-            ),
-        ],
-    )
+/// A tong's states: five clips in each of the two facings, ten states in all.
+///
+/// The jaw opens and shuts as two one-shots — `closing` runs into `closed`, `opening`
+/// back into `open` — and both ends of that are resting states the player holds it in.
+/// A goal against plays `scored_on` and returns the tong to the jaw it rests at, which
+/// is the open one for every tong but Easy's CPU, whose flat, classic return is built
+/// in here (D13).
+pub(crate) fn tong_machine(facing: Facing, rest: Jaw) -> ClipStateMachine {
+    let rest_clip = rest.clip();
+    let mut states = Vec::with_capacity(10);
+    for side in [Facing::Up, Facing::Down] {
+        let open = tong_state(TONG_OPEN, side);
+        let closing = tong_state(TONG_CLOSING, side);
+        let closed = tong_state(TONG_CLOSED, side);
+        let opening = tong_state(TONG_OPENING, side);
+        let scored_on = tong_state(TONG_SCORED_ON, side);
+        states.push((open.clone(), ClipState::staying(open.clone())));
+        states.push((closing.clone(), ClipState::new(closing, OnFinished::Next(closed.clone()))));
+        states.push((closed.clone(), ClipState::staying(closed)));
+        states.push((opening.clone(), ClipState::new(opening, OnFinished::Next(open))));
+        states.push((
+            scored_on.clone(),
+            ClipState::new(scored_on, OnFinished::Next(tong_state(rest_clip, side))),
+        ));
+    }
+    ClipStateMachine::new(tong_state(rest_clip, facing), states)
 }
 
 /// The meatball's states: `toasted` while a flame's speed boost runs, `idle`
@@ -121,18 +125,21 @@ pub(crate) fn spawn_effect(
     }
 }
 
-/// Spawn one tong at `x`. The left and right tongs are separate sheets — the art
-/// carries both halves of the character — so nothing is mirrored through a negative
-/// `Sprite.scale`.
+/// Spawn one tong at `x`, facing `facing`. The left and right tongs are separate
+/// sheets — the art carries both halves of the character — so nothing is mirrored
+/// through a negative `Sprite.scale`; the `_down` clips are drawn cells, and the
+/// collider's `_down` form is their mirror.
 ///
-/// The collider is the closed tong's measured box as a capsule: the rounded caps give
-/// an edge hit a real angle, and the footprint is the art's own, not a scaled guess.
+/// The tong is born resting on an open jaw, wearing that pose's collider, so the
+/// outline is the art's from the first frame rather than one frame behind it. A match
+/// start re-lays the jaw its difficulty rests at.
 pub(crate) fn spawn_paddle(
     world: &mut World,
     name: &str,
     x: f32,
     spec: &SheetSpec,
     sheet: &SpriteSheet,
+    facing: Facing,
 ) -> EntityId {
     let (sprite, animation) = art_components(sheet, spec);
     world.spawn()
@@ -140,18 +147,25 @@ pub(crate) fn spawn_paddle(
         .with(Transform2D::from_parts(Vec2::new(x, 0.0), 0.0, spec.scale()))
         .with(sprite)
         .with(animation)
-        .with(tong_machine())
+        .with(tong_machine(facing, Jaw::Open))
         .with(RigidBody::new_kinematic().with_rotation_locked(true))
-        .with(Collider::new(tong_collider()).with_friction(0.0).with_restitution(1.0))
+        .with(Collider::new(jaw_collider(Jaw::Open, facing))
+            .with_friction(0.0)
+            .with_restitution(1.0))
         .id()
 }
 
-/// The tong's collider: the closed tong's measured box as a vertical capsule. The
-/// engine's `capsule_y` takes the **total** height and the cap radius (it derives the
-/// straight segment itself), so this is the whole 78 px tong with 11 px caps — not
-/// rapier's half-height form, which would build a capsule a third as tall.
-pub(crate) fn tong_collider() -> ColliderShape {
-    ColliderShape::capsule_y(PADDLE_H, PADDLE_W / 2.0)
+/// Re-lay a tong's jaw: the machine that rests at this jaw and returns to it after a
+/// goal, and the collider that jaw wears. A jaw's rest is part of the machine's table
+/// rather than a runtime flag, so a tong laid at another jaw gets a new machine — and,
+/// the machine starting afresh, its clip is selected again from the top.
+pub(crate) fn lay_tong_jaw(world: &mut World, tong: EntityId, facing: Facing, rest: Jaw) {
+    if let Some(machine) = world.get_mut::<ClipStateMachine>(tong) {
+        *machine = tong_machine(facing, rest);
+    }
+    if let Some(collider) = world.get_mut::<Collider>(tong) {
+        collider.shape = jaw_collider(rest, facing);
+    }
 }
 
 /// The backdrop grid's colour for a chaos theme: its grid colour at the low alpha D5
@@ -347,16 +361,50 @@ mod tests {
     }
 
     #[test]
-    fn test_the_tong_collider_is_the_whole_measured_tong() {
-        // `capsule_y` takes the total height: a 78-tall tong with 11 px caps has a
-        // 28 px half-segment. Passing 28 as the height built a capsule 28 tall.
-        match tong_collider() {
-            ColliderShape::CapsuleY { half_height, radius } => {
-                assert_eq!(radius, PADDLE_W / 2.0);
-                assert_eq!(2.0 * half_height + 2.0 * radius, PADDLE_H, "the capsule spans the tong");
-                assert_eq!(half_height, 28.0);
+    fn test_a_tong_machine_names_ten_clips_and_returns_to_the_jaw_it_rests_at() {
+        let clips = [TONG_OPEN, TONG_CLOSING, TONG_CLOSED, TONG_OPENING, TONG_SCORED_ON];
+        for facing in [Facing::Up, Facing::Down] {
+            for rest in [Jaw::Open, Jaw::Closed] {
+                let machine = tong_machine(facing, rest);
+                assert_eq!(machine.states().len(), 10, "five clips in each of two facings");
+                assert_eq!(
+                    machine.state(),
+                    tong_state(rest.clip(), facing),
+                    "a tong is born at the jaw its match rests it at"
+                );
+
+                let row = |clip: &str| {
+                    let state = tong_state(clip, facing);
+                    machine
+                        .states()
+                        .iter()
+                        .find(|(name, _)| *name == state)
+                        .map(|(_, row)| row.clone())
+                        .unwrap_or_else(|| panic!("'{state}' is a state of this machine"))
+                };
+                for clip in clips {
+                    // The state's name is the clip's name: the sidecar is the contract.
+                    assert_eq!(row(clip).clip, tong_state(clip, facing));
+                }
+
+                assert!(matches!(row(TONG_OPEN).on_finished, OnFinished::Stay));
+                assert!(matches!(row(TONG_CLOSED).on_finished, OnFinished::Stay));
+                assert_eq!(
+                    row(TONG_CLOSING).on_finished,
+                    OnFinished::Next(tong_state(TONG_CLOSED, facing)),
+                    "a close ends shut"
+                );
+                assert_eq!(
+                    row(TONG_OPENING).on_finished,
+                    OnFinished::Next(tong_state(TONG_OPEN, facing)),
+                    "an opening ends open"
+                );
+                assert_eq!(
+                    row(TONG_SCORED_ON).on_finished,
+                    OnFinished::Next(tong_state(rest.clip(), facing)),
+                    "and a goal played out comes back to the jaw the match rests at"
+                );
             }
-            other => panic!("the tong is a vertical capsule, not {other:?}"),
         }
     }
 

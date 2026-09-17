@@ -21,29 +21,49 @@ impl PongGame {
     }
 
     fn update_left_paddle(&mut self, ctx: &GameContext, paddle: EntityId) {
-        // In single player the lone human gets both players' devices (WASD,
-        // arrows, and either pad); in two player the left paddle is P1's.
-        let axis = match self.settings.mode {
-            GameMode::SinglePlayer => {
-                ctx.players.move_y(PlayerId::P1, ctx.input)
-                    + ctx.players.move_y(PlayerId::P2, ctx.input)
-            }
-            GameMode::TwoPlayer => ctx.players.move_y(PlayerId::P1, ctx.input),
-        };
-        self.move_paddle(ctx, paddle, -PADDLE_X, paddle_dy(axis));
+        self.move_paddle(ctx, paddle, -PADDLE_X, paddle_dy(self.tong_stick(ctx, Side::Left).y));
     }
 
     fn update_right_paddle(&mut self, ctx: &GameContext, paddle: EntityId) {
-        let dy = match self.settings.mode {
-            GameMode::SinglePlayer => self.ai_dy(ctx, paddle),
-            GameMode::TwoPlayer => paddle_dy(ctx.players.move_y(PlayerId::P2, ctx.input)),
+        let dy = if self.is_cpu_tong(Side::Right) {
+            self.ai_dy(ctx, paddle)
+        } else {
+            paddle_dy(self.tong_stick(ctx, Side::Right).y)
         };
         self.move_paddle(ctx, paddle, PADDLE_X, dy);
     }
 
+    /// Whether the CPU plays this tong: in single player the right tong is the AI's,
+    /// and in two player both tongs have a player behind them.
+    pub(crate) fn is_cpu_tong(&self, side: Side) -> bool {
+        self.settings.mode == GameMode::SinglePlayer && side == Side::Right
+    }
+
+    /// The stick a tong reads, both axes at once (+x right, +y up).
+    ///
+    /// In single player the lone human gets both players' devices (WASD, arrows, and
+    /// either pad); in two player each tong is its own player's. The tong steers by
+    /// `y` and works its jaw with `x`, so both come from here and one human cannot
+    /// have the two read different devices.
+    pub(crate) fn tong_stick(&self, ctx: &GameContext, side: Side) -> Vec2 {
+        let axis = |player: PlayerId| {
+            Vec2::new(
+                ctx.players.move_x(player, ctx.input),
+                ctx.players.move_y(player, ctx.input),
+            )
+        };
+        match self.settings.mode {
+            GameMode::SinglePlayer => axis(PlayerId::P1) + axis(PlayerId::P2),
+            GameMode::TwoPlayer => axis(match side {
+                Side::Left => PlayerId::P1,
+                Side::Right => PlayerId::P2,
+            }),
+        }
+    }
+
     /// CPU control: chase the primary ball's Y at the difficulty's speed,
     /// with a dead zone so easier CPUs wobble less precisely.
-    fn ai_dy(&self, ctx: &GameContext, paddle: EntityId) -> f32 {
+    pub(crate) fn ai_dy(&self, ctx: &GameContext, paddle: EntityId) -> f32 {
         let Some(ball) = self.balls.primary else { return 0.0 };
         let diff = entity_y(ctx.world, ball) - entity_y(ctx.world, paddle);
         if diff.abs() > self.settings.difficulty.ai_dead_zone() {

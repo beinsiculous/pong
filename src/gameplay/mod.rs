@@ -1,12 +1,14 @@
 //! The in-match update loop, split by responsibility:
 //!
 //! - [`paddles`] — player input and CPU AI paddle movement
+//! - [`jaws`] — the jaws' intent, the facing, and the collider the frame wears
 //! - [`balls`] — ball velocity maintenance, extra-ball spawning/teardown
 //! - [`scoring`] — goal detection, point awards, win condition
 //! - [`flow`] — match lifecycle (serve, game over, reset, entity visibility)
 
 mod balls;
 mod flow;
+mod jaws;
 mod paddles;
 mod scoring;
 
@@ -20,13 +22,6 @@ pub(crate) fn entity_position(world: &World, entity: EntityId) -> Option<Vec2> {
 
 pub(crate) fn entity_y(world: &World, entity: EntityId) -> f32 {
     world.get::<Transform2D>(entity).map(|t| t.position.y).unwrap_or(0.0)
-}
-
-/// Whether `entity`'s clip machine is in `state`. False for an entity with no machine,
-/// and for one that has already despawned itself — a detached effect's clip ends it,
-/// so callers must never assume a handle they hold is still live.
-pub(crate) fn clip_state_is(world: &World, entity: EntityId, state: &str) -> bool {
-    world.get::<ClipStateMachine>(entity).is_some_and(|machine| machine.state() == state)
 }
 
 /// Move `entity`'s clip machine to `state`. An entity without one is left alone, as is
@@ -83,6 +78,9 @@ impl PongGame {
         }
 
         self.update_paddles(ctx);
+        // The jaws are worked before the step, so the pose a frame draws is the
+        // pose its physics runs against.
+        self.update_tongs(ctx);
         self.physics.update(ctx.world, ctx.delta_time);
 
         // Drain this frame's collision events once (take = the buffer is

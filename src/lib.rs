@@ -11,6 +11,7 @@ mod achievements;
 mod constants;
 mod effects;
 mod gameplay;
+mod jaw;
 mod menu;
 mod power_ups;
 mod spawning;
@@ -110,9 +111,11 @@ impl Game for PongGame {
         spawn_wall(ctx.world, "Bottom Wall", -wall_y);
 
         self.playfield.left_paddle = Some(spawn_paddle(
-            ctx.world, "Left Paddle", -PADDLE_X, &TONG_LEFT, &self.sheets.tong_left));
+            ctx.world, "Left Paddle", -PADDLE_X, &TONG_LEFT, &self.sheets.tong_left,
+            Facing::Up));
         self.playfield.right_paddle = Some(spawn_paddle(
-            ctx.world, "Right Paddle", PADDLE_X, &TONG_RIGHT, &self.sheets.tong_right));
+            ctx.world, "Right Paddle", PADDLE_X, &TONG_RIGHT, &self.sheets.tong_right,
+            Facing::Down));
         self.playfield.left_grill = Some(spawn_grill(
             ctx.world, "Left Grill", -GRILL_X, &GRILL_LEFT, &self.sheets.grill_left));
         self.playfield.right_grill = Some(spawn_grill(

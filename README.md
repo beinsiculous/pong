@@ -23,13 +23,25 @@ persist to `saves/pong_achievements.json`.
 **Menus** — `W`/`S` or `↑`/`↓` to navigate, `Enter`/`Space` to confirm,
 `Escape` to go back.
 
-| Mode | Left paddle | Right paddle |
-|------|-------------|--------------|
-| Single player | `W`/`S` or `↑`/`↓` | AI (Easy / Medium / Hard) |
-| Two player | `W`/`S` | `↑`/`↓` |
+| Mode | Left tong | Right tong |
+|------|-----------|-------------|
+| Single player | `W`/`A`/`S`/`D` or the arrow keys | AI (Easy / Medium / Hard) |
+| Two player | `W`/`A`/`S`/`D` | arrow keys |
+
+**Up and down move a tong; left and right work its jaw.** Pushing a tong
+toward the court shuts its jaw and pulling it away opens it, and the press
+sticks until you push the other way — on a stick, a lean past the middle is
+enough. Both players push at the ball to bite: the left tong shuts on `D`,
+the right one on `←`.
+
+**The face follows the motion.** Moving up turns a tong's gripping tips up and
+moving down turns them down, so a tong meets the ball whichever way it is
+travelling. A tong turns only with its jaw at rest, and it holds the face it
+has while a stick sits near the middle.
 
 `F1` during a match toggles the in-game collider debug overlay (magenta
-outlines drawn over the sprites).
+outlines drawn over the sprites) — the outline is the jaw the tong is drawing,
+so it opens and shuts with the art.
 
 ## Chaos Modes
 
@@ -83,11 +95,18 @@ countertop court between two rails. The art came from Jesse's Sep 9 2026 brief, 
 Aseprite, and lives in `deion_assets` (DEION_STYLE §9); the tong design is shared with
 Breakout's Food Pyramid re-skin.
 
-- **A rally chomps.** A tong touched by the ball shuts and reopens — `closing`, then `opening`,
-  back to `open` — and a tong that concedes a goal wears its angry pose while the grill behind
-  it flares. Those are the engine's clip state machine's states: the art's clips, cut into the
-  sheets, driven by a table the game declares.
-- **The meatball burns.** A scored meatball catches fire where it crossed and burns on through
+- **You work the jaws.** A tong shuts when you push it at the court and opens when you pull it
+  away, and a contact changes nothing — physics bounces the meatball and the jaw goes on doing
+  what you told it. A ball off an open arm leaves at an angle; off a shut one it leaves flat.
+  Those are the engine's clip state machine's states: the art's clips, cut into the sheets,
+  driven by a table the game declares.
+- **The AI works its jaw too.** Medium and Hard shut theirs just before a ball that is arriving,
+  and open again only when its return leaves time for a whole bite; Easy never opens at all,
+  which is the flat, classic return to beat.
+- **A goal burns on the goal line**, not where the meatball died: the fire catches in front of
+  the grill the point was conceded at, while that grill flares and the tong behind it wears its
+  angry pose.
+- **The meatball burns.** A scored meatball catches fire on the goal line and burns on through
   the next serve; the flame pickup toasts it for as long as the speed boost runs, and the knife
   pickup splits it in two.
 - **1× art, pixel-snapped.** One art pixel is one window pixel, nearest-filtered, no faked

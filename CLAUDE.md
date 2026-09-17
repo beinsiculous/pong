@@ -63,11 +63,39 @@ that stays until `insiculous_web#64` rules.
 
   | subject | cell | collider | anchor |
   |---|---|---|---|
-  | tong (left / right) | 64×96 | capsule 22×78 (`capsule_y(78, 11)` — the engine's constructor takes the total height) | centred |
+  | tong (left / right) | 64×96 | the jaw pose the drawn frame is (table below) | centred |
   | meatball | 48×64 | circle r 15.5 | (−0.5, +10.5) — the body sits low, fire above it |
   | grill | 32×96 | none — the goal sensor scores | centred |
   | pickup (flame / knife) | 32×32 | circle r 12 (the unchanged `POWERUP_SIZE`) | centred; the art's own 1 px is deliberately not applied |
   | court tile / wall rail | 64×64 / 64×16 | none | centred |
+
+  **The jaw's five poses** are measured from the left tong's `_up` cells, per row from the synced
+  PNG, and live in `src/jaw.rs` (the working of them, frame by frame, is `gameplay/jaws.rs`). Every open pose
+  is four capsules: two arms from the one hinge — the cell's mirror axis, 33.5 below the centre —
+  to that pose's tips, 27.5 above the centre, and on each tip a pad, 11 px wide from row 26 up to
+  the domed top at row 9 (a vertical capsule of radius 5.5 from 26.5 to 33.5, reaching 39 like the
+  closed tong's own top). The arms are drawn 7 px thick, so `TONG_ARM_RADIUS` is 3.5:
+
+  | pose | mouth | tips | frames |
+  |---|---|---|---|
+  | `open` | 24 px | ±17.5 | 0, 1, 9 |
+  | `wide` | 18 px | ±14.5 | 2, 8 |
+  | `narrow` | 10 px | ±10.5 | 3, 7, 11, 13 |
+  | `twitch` | 4 px | ±7.5 | 10, 12 |
+  | `closed` | one body | the flat `capsule_y(78, 11)` | 4, 5, 6 |
+
+  A tip's centre is half its mouth plus half a pad (5.5 px) out from the axis, so the mouth is
+  the whole of what closes, and the pad capsules' inner faces *are* the mouth. Every mouth is
+  narrower than the meatball, so a closing jaw can never take a ball in: the bite is a tip
+  deflection. The `_down` collider is the `_up` one mirrored in y, which is how the art draws it
+  too: both tongs are one body, carried both ways up.
+
+  **The collider follows the drawn frame.** `clip_poses` gives a pose per clip frame, and each
+  frame pong reads the tong's `SpriteAnimation.current_clip` (its facing stripped) and its
+  **clip-relative** `current_frame` and dresses the collider to match — written only when the
+  shape changes, so a rebuild is spent only where the drawn jaw moved. The engine advances
+  animations in the frame tail *after* the game's update, so the outline is the frame drawn last
+  game frame: a lag of one game frame, a sixth of the shortest pose.
 
 - **Animation is the engine's `ClipStateMachine`** — the game declares a table and never polls a
   clip. The state names are constants in `src/types.rs`, and they are the sidecars' clip names: a
@@ -75,15 +103,34 @@ that stays until `insiculous_web#64` rules.
 
   | subject | table |
   |---|---|
-  | tong | `open` (Stay) · `closing` → `opening` · `opening` → `open` · `scored_on` → `open` |
+  | tong | ten states, the five clips in each facing: `open_up`/`open_down` (Stay) · `closing_*` → `closed_*` · `closed_*` (Stay) · `opening_*` → `open_*` · `scored_on_*` → the jaw it rests at |
   | meatball | `idle` (Stay) · `toasted` (Stay) |
   | grill | `idle` (Stay) · `score` → `idle` |
   | pickup | `idle` (Stay); the puff it leaves plays `collect` → despawn |
 
-  A contact chomps a tong **only from `open`**: a ball arriving mid-chomp still bounces (the
-  physics is the physics) and neither restarts the clip nor stacks a second chomp. A goal against
-  sets `scored_on`, which outranks a contact, flares the grill behind that tong, and burns the
-  meatball where it crossed. The **flame** toasts the meatball it catches (the Insane speed step
+  `_up` is the left tong's pictured orientation — tips up, hinge down — and `_down` its mirror.
+  `TONG_CLOSED` is a state like any other: a shut jaw is something the tong rests at, not a pose
+  passed through.
+
+  **The player works the jaws.** Up and down move a tong; its horizontal axis works the jaw —
+  toward the court closes and away opens, and the press sticks until the stick asks the other
+  way (past a 0.5 dead zone, inside which the held jaw stands). Both players push at the ball to
+  bite. The face follows the vertical axis, turned only from a resting jaw so no clip restarts
+  under the tong. **A contact changes nothing**: physics bounces the meatball and the jaw goes on
+  doing what it was told. A goal against sets `scored_on` in the facing that tong wears, flares
+  the grill behind it, and burns the fire on the conceded side's goal line.
+
+  The CPU works its jaw by policy: it shuts when the ball's time to its face is inside Medium's
+  0.45 s or Hard's 0.6 s, and opens only when the ball's return leaves a whole open and close to
+  spare. Its face turns toward a ball beyond the tong's own end (`CPU_FACE_TURN_DISTANCE`, half
+  the tong) and holds for one alongside, where the chase reverses by a pixel or two every frame
+  and a face that followed it would flap. **Easy never opens** — its jaw rests shut, a parameter of its machine, so a goal against
+  it plays `scored_on` and comes back shut. A serve resets both jaws' asked-for state to the
+  match's rest, so a bite asked for in the last rally and since released is not carried into
+  the next one — a stick still pushing is still asking. Only a
+  `started` event is a hit: the engine reports a pair by diffing each step's contact set against
+  the last, so a jaw rebuilt under a ball it already touches emits no new start and a rebuild
+  never echoes a hit. The **flame** toasts the meatball it catches (the Insane speed step
   no longer does) and the boost's expiry is what un-toasts it; the **knife**'s extra ball spawns
   from the collecting ball, so the meatball visibly splits.
 - **1× and pixel-snapped** (`GameConfig::with_pixel_snap(true)`, D1): one art pixel per window
