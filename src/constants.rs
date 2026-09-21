@@ -3,38 +3,6 @@ use engine_core::prelude::*;
 pub(crate) const WIN_W: f32 = 800.0;
 pub(crate) const WIN_H: f32 = 600.0;
 
-/// One sheet's contract: the synced copy's path, the size of one art cell, and the
-/// opaque bounds of the reference frame the collider is measured from — all in art
-/// pixels. The cell drives the sprite's `Transform2D.scale` (D1: one art pixel per
-/// window pixel, `px / RENDER_UNIT`); the bounds drive the collider and the sprite
-/// offset that lands the artwork on it, so neither can fake a footprint the art does
-/// not have.
-pub(crate) struct SheetSpec {
-    /// Path under the asset base, as written in `assets/sprites/sync.list`.
-    pub(crate) path: &'static str,
-    /// One cell of the sheet, in art pixels.
-    pub(crate) cell: Vec2,
-    /// The reference frame's opaque box within the cell, in art pixels, Y down.
-    pub(crate) bounds: (Vec2, Vec2),
-}
-
-impl SheetSpec {
-    /// The transform scale that draws the sheet at 1x, which is what keeps nearest
-    /// filtering crisp.
-    pub(crate) fn scale(&self) -> Vec2 {
-        Vec2::new(self.cell.x / RENDER_UNIT, self.cell.y / RENDER_UNIT)
-    }
-
-    /// Where the cell's centre must be drawn relative to the entity for the
-    /// reference frame's opaque centre to land on the entity. World units, Y up: the
-    /// cell's Y grows downward, so a body that sits low in its cell draws the cell
-    /// above the entity. Zero for every subject whose reference frame is centred.
-    pub(crate) fn sprite_offset(&self) -> Vec2 {
-        let box_centre = (self.bounds.0 + self.bounds.1) * 0.5;
-        Vec2::new(self.cell.x * 0.5 - box_centre.x, box_centre.y - self.cell.y * 0.5)
-    }
-}
-
 // --- the sheets ---------------------------------------------------------------------
 // The bounds are measured from the synced PNGs (the executor's `report-4.md` carries
 // the measurement): the opaque box of the named reference frame inside its own cell.
@@ -277,6 +245,18 @@ mod tests {
                     );
                 }
             }
+        }
+    }
+
+    #[test]
+    fn test_every_sheet_is_measured_inside_its_own_cell() {
+        // A transposed or overflowing box still yields a plausible offset, so the
+        // measurement itself is checked before anything is derived from it.
+        for spec in [
+            &TONG_LEFT, &TONG_RIGHT, &MEATBALL, &GRILL_LEFT, &GRILL_RIGHT, &PICKUP_FLAME,
+            &PICKUP_KNIFE, &COURT_TILE, &COURT_EDGE,
+        ] {
+            assert!(spec.is_within_cell(), "{} is measured outside its cell", spec.path);
         }
     }
 

@@ -56,8 +56,9 @@ that stays until `insiculous_web#64` rules.
   hand-copy or hand-edit a file there — fix the master in `deion_assets` and re-sync. The working
   set's `scripts/check-sprite-sync.sh` runs that check over every game and prints `pong OK` (the
   other five have no sync list yet).
-- **The sheets block** in `src/constants.rs` names each sheet once (`SheetSpec`): its path, its
-  cell, and the opaque bounds of the reference frame the collider is measured from. The cell
+- **The sheets block** in `src/constants.rs` names each sheet once (the engine's `SheetSpec`,
+  from the prelude — every re-skin shares the one type): its path, its cell, and the opaque
+  bounds of the reference frame the collider is measured from. The cell
   drives the draw scale; the bounds drive the collider and the `Sprite.offset` that lands the art
   on it. Nothing is sized by guess, and nothing is faked through `Transform2D.scale`.
 
