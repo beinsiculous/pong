@@ -34,7 +34,7 @@ use std::path::PathBuf;
 /// 3. the site's `src/content/games/<slug>.md` `wasm:` path,
 /// 4. the deployed dir `insiculous_web/public/games/<slug>/v<N>/`.
 #[cfg(not(feature = "editor"))]
-const ASSET_BASE: &str = "/games/pong/v3/assets";
+const ASSET_BASE: &str = "/games/pong/v4/assets";
 
 /// Where the editor bundle serves its assets from; also its VFS key base.
 ///
@@ -45,7 +45,7 @@ const ASSET_BASE: &str = "/games/pong/v3/assets";
 /// 3. the site's `src/content/games/<slug>.md` `editor:` path,
 /// 4. the deployed dir `insiculous_web/public/playground/<slug>/v<N>/`.
 #[cfg(feature = "editor")]
-const EDITOR_ASSET_BASE: &str = "/playground/pong/v3/assets";
+const EDITOR_ASSET_BASE: &str = "/playground/pong/v4/assets";
 
 /// The editor's preferences slot for this game.
 ///
