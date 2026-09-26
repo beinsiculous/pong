@@ -446,6 +446,9 @@ pub struct PongGame {
     pub(crate) debug_colliders: bool,
     /// Engine pause menu (Esc/Start toggles during a match).
     pub(crate) pause: PauseMenu,
+    /// The title screen's art, loaded in `init`; `None` when it did not load, and the
+    /// title keeps its plain centred menu.
+    pub(crate) title_art: Option<crate::title_art::TitleArt>,
     /// Scroll offset (px) of the achievements page — its content is taller
     /// than the window; W/S move it.
     pub(crate) achievements_scroll: f32,
@@ -474,6 +477,7 @@ impl Default for PongGame {
             transient_visuals: Vec::new(),
             debug_colliders: false,
             pause: PauseMenu::new(),
+            title_art: None,
             achievements_scroll: 0.0,
         }
     }

@@ -8,7 +8,8 @@
 
 use engine_core::prelude::*;
 use crate::achievements::DISPLAY_SECTIONS;
-use crate::menu::{achievements_panel, chaos_panel, difficulty_panel, title_panel, TitleItem, TITLE_ITEMS};
+use crate::title_art::{draw_title_art, title_layout};
+use crate::menu::{achievements_panel, chaos_panel, difficulty_panel, TitleItem, TITLE_ITEMS};
 use crate::types::*;
 
 /// Pixel height of the full achievements list (headers + rows + gaps).
@@ -64,7 +65,9 @@ impl PongGame {
             .collect();
         let hint = strings.tr("title.hint").to_string();
 
-        let panel = title_panel(&title, ctx.window_size);
+        let layout = title_layout(&title, ctx.window_size, self.title_art.as_ref());
+        draw_title_art(ctx.ui, ctx.window_size, &layout, self.title_art.as_ref());
+        let panel = layout.panel;
         let mut y = panel.begin(ctx.ui, &style);
         for (i, item) in items.iter().enumerate() {
             y = panel.item(ctx.ui, y, item, i as u8 == selection, &style);
