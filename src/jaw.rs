@@ -5,6 +5,11 @@
 //! A jaw's geometry is measured, never guessed: every number comes from a per-row
 //! scan of the synced PNG, alpha > 0, and the tests map each one back into the box
 //! the art draws it in.
+//!
+//! The block between the two `shared tong jaw` markers is held byte-identical in
+//! `games/breakout/src/jaw.rs`, which lays the same tong on its side as The Food
+//! Pyramid's paddle; the working set's `scripts/check-tong-jaw-sync.sh` diffs the two.
+//! Change it in both files or in neither.
 
 use engine_core::prelude::*;
 use crate::constants::*;
@@ -12,6 +17,7 @@ use crate::types::{
     Facing, Jaw, Side, TONG_CLOSED, TONG_CLOSING, TONG_OPEN, TONG_OPENING, TONG_SCORED_ON,
 };
 
+// ==== shared tong jaw: begin ====
 // --- the jaw ---
 // The five poses the tong's fourteen `_up` frames draw, measured from the synced PNG
 // cell by cell. The numbers below are world units with the cell's centre as origin
@@ -116,6 +122,12 @@ pub(crate) fn clip_poses(clip: &str) -> &'static [JawPose] {
     }
 }
 
+/// How far a stick is pushed toward the field before it asks a tong's jaw to move: a
+/// stick leaning inside this band leaves the intent where it was, which is what makes
+/// the jaw stick rather than chatter. The bite feels the same in every game that has it.
+pub(crate) const JAW_AXIS_DEAD_ZONE: f32 = 0.5;
+// ==== shared tong jaw: end ====
+
 /// The collider a tong draws at `pose`: for the four open poses, one capsule per arm
 /// from the hinge to its tip and one per pad standing on that tip — the pad is the
 /// whole of what a ball meets at the jaw's end, and an arm's chord alone stops a
@@ -160,11 +172,6 @@ pub(crate) fn tong_face_x(side: Side) -> f32 {
         Side::Right => face,
     }
 }
-
-/// How far a tong's two jaws are pushed toward the court before they move it: a stick
-/// leaning inside this band leaves the intent where it was, which is what makes the
-/// jaw stick rather than chatter (D8).
-pub(crate) const JAW_AXIS_DEAD_ZONE: f32 = 0.5;
 
 /// How far past a tong's own end the ball must be before the CPU turns its face to
 /// it: half the tong's height, so a ball alongside the tong — where the chase wobbles

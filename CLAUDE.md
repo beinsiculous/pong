@@ -71,7 +71,7 @@ that stays until `insiculous_web#64` rules.
   | court tile / wall rail | 64×64 / 64×16 | none | centred |
 
   **The jaw's five poses** are measured from the left tong's `_up` cells, per row from the synced
-  PNG, and live in `src/jaw.rs` (the working of them, frame by frame, is `gameplay/jaws.rs`). Every open pose
+  PNG, and live in `src/jaw.rs` (the working of them, frame by frame, is `gameplay/jaws.rs`). The measured block there — between its two `shared tong jaw` markers, the stick's dead zone included — is held byte-identical in `games/breakout/src/jaw.rs`, whose paddle is the same tong laid on its side; the working set's `scripts/check-tong-jaw-sync.sh` diffs the two, so a change lands in both or neither. Every open pose
   is four capsules: two arms from the one hinge — the cell's mirror axis, 33.5 below the centre —
   to that pose's tips, 27.5 above the centre, and on each tip a pad, 11 px wide from row 26 up to
   the domed top at row 9 (a vertical capsule of radius 5.5 from 26.5 to 33.5, reaching 39 like the
