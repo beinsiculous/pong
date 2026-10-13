@@ -77,24 +77,18 @@ pub(crate) fn grill_machine() -> ClipStateMachine {
 /// puff that replaces it, not to the pickup: the engine's `Pickups::collect` destroys
 /// the pickup and its body in the same call.
 pub(crate) fn pickup_machine() -> ClipStateMachine {
-    ClipStateMachine::new(PICKUP_IDLE, vec![(PICKUP_IDLE.to_string(), ClipState::staying(PICKUP_IDLE))])
+    ClipStateMachine::single(PICKUP_IDLE)
 }
 
 /// The one-shot a collected pickup leaves behind: it plays `collect` and despawns.
 pub(crate) fn collect_machine() -> ClipStateMachine {
-    ClipStateMachine::new(
-        PICKUP_COLLECT,
-        vec![(PICKUP_COLLECT.to_string(), ClipState::new(PICKUP_COLLECT, OnFinished::Despawn))],
-    )
+    ClipStateMachine::one_shot(PICKUP_COLLECT)
 }
 
 /// The scored meatball's fire: `on_fire` loops, and the entity's own `Lifetime` is
 /// what ends it, so the burn lasts exactly as long as the constant says.
 pub(crate) fn goal_fire_machine() -> ClipStateMachine {
-    ClipStateMachine::new(
-        MEATBALL_ON_FIRE,
-        vec![(MEATBALL_ON_FIRE.to_string(), ClipState::staying(MEATBALL_ON_FIRE))],
-    )
+    ClipStateMachine::single(MEATBALL_ON_FIRE)
 }
 
 /// Spawn a detached one-shot effect at `position`: the puff where a pickup was

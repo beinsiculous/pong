@@ -6,7 +6,6 @@ use crate::constants::*;
 use crate::spawning::backdrop_color;
 use crate::types::*;
 use super::balls::serve_direction;
-use super::set_clip_state;
 
 impl PongGame {
     /// State transitions during a match: serve from `Serving`, restart or

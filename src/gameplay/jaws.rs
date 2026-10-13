@@ -14,7 +14,7 @@ use engine_core::prelude::*;
 use crate::jaw::*;
 use crate::spawning::lay_tong_jaw;
 use crate::types::*;
-use super::{entity_position, entity_y, set_clip_state};
+use super::{entity_position, entity_y};
 
 impl PongGame {
     /// Work both tongs' jaws for this frame. Runs after the tongs are steered, so the

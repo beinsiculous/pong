@@ -3,7 +3,7 @@
 
 use engine_core::prelude::*;
 use crate::constants::*;
-use crate::gameplay::{entity_position, set_clip_state};
+use crate::gameplay::entity_position;
 use crate::spawning::{collect_machine, spawn_effect};
 use crate::types::*;
 

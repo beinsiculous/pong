@@ -24,15 +24,6 @@ pub(crate) fn entity_y(world: &World, entity: EntityId) -> f32 {
     world.get::<Transform2D>(entity).map(|t| t.position.y).unwrap_or(0.0)
 }
 
-/// Move `entity`'s clip machine to `state`. An entity without one is left alone, as is
-/// an unknown state name (the machine warns and holds its ground). Re-asserting the
-/// state the machine is already in does not restart its clip.
-pub(crate) fn set_clip_state(world: &mut World, entity: EntityId, state: &str) {
-    if let Some(machine) = world.get_mut::<ClipStateMachine>(entity) {
-        let _ = machine.transition_to(state);
-    }
-}
-
 /// Push a radial shockwave into the court's backdrop grid (paddle hits, goals). The
 /// engine applies it to every backdrop on its next running frame.
 pub(crate) fn ripple_grid(world: &mut World, position: Vec2, strength: f32, radius: f32) {

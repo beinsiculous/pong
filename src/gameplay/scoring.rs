@@ -6,7 +6,7 @@ use crate::constants::*;
 use crate::effects;
 use crate::spawning::{goal_fire_machine, spawn_effect};
 use crate::types::*;
-use super::{entity_position, ripple_grid, set_clip_state};
+use super::{entity_position, ripple_grid};
 
 /// One frame's collisions, sorted into the two things scoring does with them.
 pub(crate) struct FrameCollisions {
