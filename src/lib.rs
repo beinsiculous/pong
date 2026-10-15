@@ -9,7 +9,8 @@
 
 mod achievements;
 mod constants;
-mod title_art;
+#[cfg(test)]
+mod title_screen_tests;
 mod effects;
 mod gameplay;
 mod jaw;
@@ -77,7 +78,7 @@ impl Game for PongGame {
 
         let tex = ctx.assets.create_solid_color(1, 1, [255, 255, 255, 255]).unwrap();
         self.sheets.white = tex.id;
-        self.title_art = title_art::TitleArt::load(ctx.assets);
+        self.title_art = TitleArt::load(ctx.assets, TITLE_ART);
 
         // Every sheet's path, cell and measured anchor is in `constants.rs`'s sheets
         // block; the PNG and its sidecar are the synced copies under `assets/sprites/`.

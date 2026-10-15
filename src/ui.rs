@@ -8,7 +8,6 @@
 
 use engine_core::prelude::*;
 use crate::achievements::DISPLAY_SECTIONS;
-use crate::title_art::{draw_title_art, title_layout};
 use crate::menu::{achievements_panel, chaos_panel, difficulty_panel, TitleItem, TITLE_ITEMS};
 use crate::types::*;
 
@@ -65,7 +64,7 @@ impl PongGame {
             .collect();
         let hint = strings.tr("title.hint").to_string();
 
-        let layout = title_layout(&title, ctx.window_size, self.title_art.as_ref());
+        let layout = title_layout(&title, ctx.window_size, self.title_art.as_ref(), &crate::constants::TITLE_MENU);
         draw_title_art(ctx.ui, ctx.window_size, &layout, self.title_art.as_ref());
         let panel = layout.panel;
         let mut y = panel.begin(ctx.ui, &style);
