@@ -40,7 +40,7 @@ pub use types::PongGame;
 /// relative path like `"assets"` would silently resolve against the
 /// current working directory.
 pub fn game_config(asset_base: &str) -> GameConfig {
-    GameConfig::new("Insiculous Pong")
+    GameConfig::new("Tong")
         .with_size(WIN_W as u32, WIN_H as u32)
         .with_clear_color(0.0, 0.0, 0.0, 1.0)
         .with_fps(60)

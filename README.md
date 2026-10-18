@@ -49,7 +49,7 @@ Pick one before each match:
 
 | Mode | Effect |
 |------|--------|
-| Normal | Classic Pong |
+| Normal | Classic Tong |
 | Insane | Ball speeds up on every paddle hit |
 | Ridiculous | Match starts with two balls |
 | Insiculous | Both at once |
@@ -77,7 +77,7 @@ scene editor — useful for inspecting and tuning entities while the game runs:
   ...), since all entities are spawned from those constants in
   `src/spawning.rs`.
 
-The same build runs in the browser at [beinsiculous.com/playground/pong/](https://beinsiculous.com/playground/pong/): the game inside the editor, layout only — the rules are compiled in and nothing you change there persists.
+The same build runs in the browser at [beinsiculous.com/playground/tong/](https://beinsiculous.com/playground/tong/): the game inside the editor, layout only — the rules are compiled in and nothing you change there persists.
 
 ## Pong as data
 
@@ -116,8 +116,9 @@ Breakout's Food Pyramid re-skin.
   the working set's `scripts/check-sprite-sync.sh` proves a game's copies still match that pin.
   The copies keep their `ai_` prefix, so this build is free-tier until the hand-cleaning pass
   (DEION_STYLE §6).
-- **The site's entry still says *Insiculous Pong*** (slug `pong`): what the shopfront calls the
-  game is M and Jesse's call (`insiculous_web#64`).
+- **On the site it is *Tong***, at `/games/tong/`; `/games/pong/` redirects there. The web save
+  keys are `beinsiculous.games.tong.*`, and the `beinsiculous.games.pong.*` keys it saved before the
+  rename are read at boot and never written.
 
 **Open questions** (answered questions move up into the spec above and
 get DELETED from this list — live-docs convention):

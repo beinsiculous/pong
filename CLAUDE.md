@@ -16,7 +16,7 @@ The game depends on the `insiculous_2d` engine by relative path (`../../insiculo
 
 ## Architecture
 
-This is a single-crate game (`insiculous_pong`) built on the in-house `insiculous_2d` ECS engine. `PongGame` (in `src/types.rs`) implements the engine's `Game` trait in `src/main.rs` — `init()` spawns all entities, `update()` runs once per frame. With `--features editor` the identical game runs inside the engine's scene editor via `editor_integration::run_game_with_editor`, and at `/playground/pong/` in the browser (the same feature, built by the engine's `build_wasm.sh --kind editor` and served from the site); no game code changes between the modes.
+This is a single-crate game (`insiculous_pong`) built on the in-house `insiculous_2d` ECS engine. `PongGame` (in `src/types.rs`) implements the engine's `Game` trait in `src/main.rs` — `init()` spawns all entities, `update()` runs once per frame. With `--features editor` the identical game runs inside the engine's scene editor via `editor_integration::run_game_with_editor`, and at `/playground/tong/` in the browser (the same feature, built by the engine's `build_wasm.sh --kind editor` and served from the site); no game code changes between the modes.
 
 `PongGame` is composed of focused sub-structs (`Playfield` entity handles, `Balls`, `Scoreboard`, `PowerUpState`, `MatchSettings`, `Sheets`) rather than flat fields — keep new state in the sub-struct it belongs to.
 
@@ -47,8 +47,9 @@ This is a single-crate game (`insiculous_pong`) built on the in-house `insiculou
 Pong is the **first of the six Phase G Deion re-skins**, and the build is no longer neon: the
 paddles are **living tongs**, the ball is a **meatball with eyes**, the goals are **grills**
 behind them, the floor is a **countertop tile** and the walls are **rails**. In-game the game is
-**Tong** (`title.window` in both locale files); the site still lists it as *Insiculous Pong*, and
-that stays until `insiculous_web#64` rules.
+**Tong** (`title.window` in both locale files); the site names it **Tong** at `/games/tong/`, the
+former `/games/pong/` redirecting there, and its web save keys are `beinsiculous.games.tong.*`, with
+the former `beinsiculous.games.pong.*` keys read at boot.
 
 - **Art enters only through the sync.** `assets/sprites/sync.list` pins the `deion_assets` commit
   and lists the nine sources; `python3 deion_assets/scripts/sync_sprites.py .` copies each PNG and
