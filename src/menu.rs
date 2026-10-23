@@ -157,7 +157,7 @@ impl PongGame {
             // Mirror the runtime selection into the engine context so any
             // code reading ctx.chaos_mode agrees with self.settings.chaos.
             ctx.chaos_mode = self.settings.chaos;
-            self.start_game(ctx.world);
+            self.start_match(ctx);
         }
     }
 }

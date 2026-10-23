@@ -164,7 +164,7 @@ impl PongGame {
     /// ripple. Runs after the speed-boost pass so velocities are settled
     /// before positions are read. The burst keeps the paddle-side colour — every
     /// sprite is the art's own now, so this is the last place a side's colour shows.
-    fn spawn_paddle_hit_visuals(&mut self, ctx: &mut GameContext, hits: &[(EntityId, Side)]) {
+    pub(crate) fn spawn_paddle_hit_visuals(&mut self, ctx: &mut GameContext, hits: &[(EntityId, Side)]) {
         let theme = self.current_theme();
 
         let mut hit_events: Vec<(Vec2, Vec4, Vec2)> = Vec::new();
@@ -183,7 +183,13 @@ impl PongGame {
         for (pos, color, normal) in hit_events {
             let burst = effects::paddle_hit_burst(color, normal, &theme, self.sheets.white);
             ctx.particles.spawn_burst(pos, &burst);
-            ripple_grid(ctx.world, pos, 240.0, 80.0);
+            ripple_grid(ctx.world, pos, HIT_RIPPLE_STRENGTH, HIT_RIPPLE_RADIUS);
+        }
+        // Two balls hitting in one frame are two hits, as they are two bursts.
+        for &(_, side) in hits {
+            if let Some(tong) = self.playfield.paddle(side) {
+                self.music.hit(ctx, tong);
+            }
         }
     }
 
@@ -214,7 +220,7 @@ impl PongGame {
     /// The fire is a looping effect with a lifetime of its own, so it outlives the
     /// immediate respawn (`respawn_for_serve` is called in this same frame) and is
     /// ended by the next serve or by its timer.
-    fn concede_goal(
+    pub(crate) fn concede_goal(
         &mut self,
         ctx: &mut GameContext,
         ball: EntityId,
@@ -228,6 +234,7 @@ impl PongGame {
         self.transient_visuals.push(fire);
 
         self.react_to_goal_against(ctx.world, conceded);
+        self.music.goal(ctx);
         self.score.award_point(conceded.opposite());
         self.destroy_ball(ctx.world, ball);
     }

@@ -22,7 +22,7 @@ impl PongGame {
             }
             GameState::GameOver { .. } => {
                 if primary {
-                    self.start_game(ctx.world);
+                    self.start_match(ctx);
                 } else if menu {
                     self.reset_to_title(ctx.world);
                 }
@@ -58,6 +58,13 @@ impl PongGame {
         }
 
         self.state = GameState::Playing;
+    }
+
+    /// A match starts from a menu, a game over or the pause menu's Restart: the board
+    /// laid, and the song requested again or taken back to its top (`Music::restart`).
+    pub(crate) fn start_match(&mut self, ctx: &mut GameContext) {
+        self.start_game(ctx.world);
+        self.music.restart(ctx);
     }
 
     /// Begin a fresh match with the current settings: zero the score, drop all

@@ -440,6 +440,8 @@ pub struct PongGame {
     /// Scroll offset (px) of the achievements page — its content is taller
     /// than the window; W/S move it.
     pub(crate) achievements_scroll: f32,
+    /// The song, its triggers, its pulse and its telemetry.
+    pub(crate) music: crate::music::Music,
 }
 
 impl PongGame {
@@ -467,6 +469,7 @@ impl Default for PongGame {
             pause: PauseMenu::new(),
             title_art: None,
             achievements_scroll: 0.0,
+            music: crate::music::Music::default(),
         }
     }
 }

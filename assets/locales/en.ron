@@ -54,7 +54,7 @@ LocaleFile(
         "pause.restart": "Restart",
         "pause.quit_title": "Quit to Title",
         "pause.exit_game": "Exit Game",
-        "pause.hint": "ESC resumes - SPACE/ENTER or click confirms",
+        "pause.hint": "ESC resumes - SPACE/ENTER or click confirms - move to jam",
 
         // Achievements page
         "ach.window": "ACHIEVEMENTS",

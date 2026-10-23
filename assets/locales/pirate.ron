@@ -56,7 +56,7 @@ LocaleFile(
         "pause.restart": "New Voyage",
         "pause.quit_title": "Back to Port",
         "pause.exit_game": "Abandon Ship",
-        "pause.hint": "ESC weighs anchor - SPACE/ENTER or click confirms",
+        "pause.hint": "ESC weighs anchor - SPACE/ENTER or click confirms - sway t' jam",
 
         // Achievements page
         "ach.window": "TROPHIES O' PLUNDER",

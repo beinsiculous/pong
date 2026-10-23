@@ -1,0 +1,59 @@
+(
+    version: 1,
+    soundfont: "soundfonts/tong.sf2",
+    looping: true,
+    parts: [
+        (
+            name: "refrain",
+            track: Name("melody"),
+            mode: Loop,
+            quantize: Off,
+        ),
+        (
+            name: "jam",
+            track: Name("jam"),
+            mode: Loop,
+            quantize: Off,
+        ),
+    ],
+    instruments: [
+        (
+            name: "trumpet",
+            source: SoundFont(
+                path: "soundfonts/tong.sf2",
+                bank: 0,
+                preset: 56,
+            ),
+        ),
+        (
+            name: "timpani",
+            source: SoundFont(
+                path: "soundfonts/tong.sf2",
+                bank: 0,
+                preset: 47,
+            ),
+        ),
+    ],
+    bindings: [
+        (
+            action: "hit",
+            part: "refrain",
+            instrument: "trumpet",
+        ),
+        (
+            action: "goal",
+            part: "refrain",
+            instrument: "timpani",
+        ),
+        (
+            action: "menu",
+            part: "jam",
+            instrument: "trumpet",
+        ),
+    ],
+    provenance: Some((
+        author: "Georges Bizet, 1875; sequenced by the Opus executor for Be Insiculous, 2026",
+        license: "CC0-1.0",
+    )),
+    midi_fingerprint: Some(18345001712321070070),
+)

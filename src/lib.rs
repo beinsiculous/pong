@@ -15,6 +15,9 @@ mod effects;
 mod gameplay;
 mod jaw;
 mod menu;
+mod music;
+#[cfg(test)]
+mod music_tests;
 mod power_ups;
 mod spawning;
 mod types;
@@ -122,10 +125,14 @@ impl Game for PongGame {
         // The grid is the engine's now (D5): it simulates and draws the backdrop
         // entity, and gameplay events queue impulses into it.
         self.playfield.backdrop = Some(spawn_backdrop(ctx.world, &self.current_theme()));
+
+        self.music.start(ctx);
+        log::info!("tong: init complete");
     }
 
     fn update(&mut self, ctx: &mut GameContext) {
         self.frame_count = self.frame_count.wrapping_add(1);
+        self.music.update(ctx);
 
         match self.state.clone() {
             GameState::TitleScreen { selection } => self.update_title_input(ctx, selection),

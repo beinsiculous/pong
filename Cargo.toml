@@ -20,6 +20,8 @@ log = "0.4"
 
 [dev-dependencies]
 engine_core = { path = "../../insiculous_2d/crates/engine_core", features = ["test-support"] }
+# The song sidecar's parser, for the test that reads the committed sidecar's shape.
+music_midi = { path = "../../insiculous_2d/crates/music_midi" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 # The `=` pin must match the wasm-bindgen CLI (asserted by build_wasm.sh)

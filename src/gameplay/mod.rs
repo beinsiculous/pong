@@ -51,14 +51,18 @@ impl PongGame {
             let action = self.pause.update(ctx.players, ctx.input, ctx.window_size);
             ctx.time_scale = self.pause.time_scale();
             match action {
-                PauseAction::Restart => { self.start_game(ctx.world); return; }
+                PauseAction::Restart => { self.start_match(ctx); return; }
                 PauseAction::QuitToTitle => { self.reset_to_title(ctx.world); return; }
                 PauseAction::ExitGame => { ctx.request_exit(); return; }
                 // Skip the rest of the frame so the resuming keypress can't
                 // leak into gameplay; the world unfreezes next frame.
-                PauseAction::Resumed => return,
+                PauseAction::Resumed => {
+                    self.music.follow_pause(ctx, false);
+                    return;
+                }
                 PauseAction::Idle => {}
             }
+            self.music.follow_pause(ctx, self.pause.is_active());
             if self.pause.is_active() {
                 // The frozen scene stays visible under the pause overlay: the engine
                 // holds the backdrop grid still with the rest of the world (it steps on
@@ -66,6 +70,12 @@ impl PongGame {
                 self.emit_collider_overlay(ctx);
                 return;
             }
+        }
+
+        if matches!(self.state, GameState::Serving | GameState::Playing) {
+            let grills = [Side::Left, Side::Right]
+                .map(|side| self.playfield.grill(side).and_then(|grill| entity_position(ctx.world, grill)));
+            self.music.pulse(ctx, grills);
         }
 
         self.update_paddles(ctx);

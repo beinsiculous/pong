@@ -155,6 +155,23 @@ pub(crate) const BACKDROP_ALPHA: f32 = 0.25;
 
 pub(crate) const WIN_SCORE: u32 = 7;
 
+/// The paddle-hit ripple in the backdrop grid; the beat pulse is a share of it.
+pub(crate) const HIT_RIPPLE_STRENGTH: f32 = 240.0;
+pub(crate) const HIT_RIPPLE_RADIUS: f32 = 80.0;
+/// A beat that is not a bar line ripples the grills at this share of a hit.
+pub(crate) const BEAT_PULSE_FRACTION: f32 = 0.25;
+
+/// Tong's song under the asset base: an agent's first cut, under `ai/music` until a
+/// person's pass promotes it.
+pub(crate) const SONG_PATH: &str = "ai/music/ai_tong.mid";
+/// The song's three bindings: a paddle hit and a goal walk the shared refrain, a pause
+/// menu move the jam.
+pub(crate) const HIT_BINDING: &str = "hit";
+pub(crate) const GOAL_BINDING: &str = "goal";
+pub(crate) const MENU_BINDING: &str = "menu";
+/// How often a `conductor=on` telemetry line is printed.
+pub(crate) const TELEMETRY_SECONDS: f32 = 5.0;
+
 /// Paddle-side colours, now only the tint of a paddle-hit particle burst — every art
 /// sprite is drawn white, so a side's colour shows nowhere else.
 pub(crate) const LEFT_COLOR: Vec4 = Vec4::new(1.0, 0.3, 0.3, 1.0);
