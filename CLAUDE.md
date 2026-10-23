@@ -183,9 +183,11 @@ Conductor Pattern in the engine). Everything is in `src/music.rs`, its constants
   song in the editor bundle — an audition) → left alone, and Tong's triggers are sent to it
   anyway, refused and counted where it binds nothing.
 - **In the editor** (`--features editor`, and `/playground/tong/`) editing is silent: the editor
-  stops the music `init` asked for, the composer's transport is what plays while editing, and
-  Tong's song first sounds at the first match start of a Play session (the empty-slot branch
-  above); Stop ends it.
+  remembers and stops the song `init` asked for, the composer's transport is what plays while
+  editing, and a Play session with no composer song open asks for Tong's song again on its first
+  frame — the first match start then finds it in the slot and seeks it to the top (the own-song
+  branch above); with a composer song open, that song is the session's music and a match leaves
+  it alone. Stop ends it.
 - **The pulse**: on each bar line the backdrop grid takes the full hit ripple under each grill,
   on any other beat a quarter of it, while Serving or Playing and never under the pause menu
   (the frozen grid discards impulses).
