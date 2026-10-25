@@ -11,7 +11,7 @@ use engine_core::prelude::*;
 use engine_core::test_support::{DrawCommand, GameHarness, InputEvent};
 use music_midi::{PartMode, PositionSnapshot, Quantize};
 
-use crate::constants::SONG_PATH;
+use crate::constants::{BALL_RADIUS, GOAL_SENSOR_W, GOAL_SENSOR_X, SONG_PATH};
 use crate::types::{GameState, PongGame, Side};
 
 const FRAME: f32 = 1.0 / 60.0;
@@ -80,7 +80,7 @@ fn the_committed_sidecar_shares_one_unquantized_loop_part_between_hit_and_goal_a
 #[test]
 fn the_song_plays_after_init() {
     let mut harness = harness_on(&repository_assets());
-    assert!(!harness.game().music.song_failed);
+    assert!(!harness.game().music.game.song_failed());
     let before = conductor(&harness).blocks_rendered;
     settle(&mut harness);
     assert!(conductor(&harness).blocks_rendered > before, "the virtual clock renders the song");
@@ -151,7 +151,7 @@ fn selected_row(harness: &GameHarness<PongGame>) -> Option<String> {
 #[test]
 fn the_pause_menu_jams_one_unit_a_move_and_nothing_on_open_confirm_or_the_pointer() {
     let mut harness = in_a_match(&repository_assets());
-    let jams = |harness: &GameHarness<PongGame>| harness.game().music.counts.jam_units;
+    let jams = |harness: &GameHarness<PongGame>| harness.game().music.game.jam_units();
 
     harness.step(FRAME, &[InputEvent::KeyPressed(KeyCode::Escape), InputEvent::KeyPressed(KeyCode::KeyW)]);
     harness.step(FRAME, &[InputEvent::KeyReleased(KeyCode::Escape), InputEvent::KeyReleased(KeyCode::KeyW)]);
@@ -190,7 +190,7 @@ fn the_pause_menu_jams_one_unit_a_move_and_nothing_on_open_confirm_or_the_pointe
 #[test]
 fn a_beat_ripples_the_grills_while_the_match_runs_and_never_under_the_pause_menu() {
     let mut harness = in_a_match(&repository_assets());
-    let pulsed = |harness: &GameHarness<PongGame>| harness.game().music.counts.pulsed;
+    let pulsed = |harness: &GameHarness<PongGame>| harness.game().music.game.pulsed();
     let before = pulsed(&harness);
     for _ in 0..3 {
         std::thread::sleep(Duration::from_millis(550));
@@ -338,8 +338,8 @@ impl Drop for AssetsWithoutBank {
 fn without_its_bank_the_game_runs_silent_and_counts_every_trigger_it_refuses() {
     let scratch = AssetsWithoutBank::new();
     let mut harness = in_a_match(&scratch.assets());
-    assert!(harness.game().music.song_failed, "the song failed at init");
-    assert_eq!(harness.game().music.failures, 2, "and again at the match start, which asks every time");
+    assert!(harness.game().music.game.song_failed(), "the song failed at init");
+    assert_eq!(harness.game().music.game.failures(), 2, "and again at the match start, which asks every time");
     assert_eq!(harness.audio().song_label(), None);
     let ball = harness.game().balls.primary.expect("a meatball");
     let refused = harness.sound_sources().refused_triggers();
@@ -366,6 +366,41 @@ fn a_reopen_on_the_frame_after_a_resume_jams_nothing() {
         &[InputEvent::KeyReleased(KeyCode::Enter), InputEvent::KeyPressed(KeyCode::Escape), InputEvent::KeyPressed(KeyCode::KeyW)],
     );
     assert!(harness.game().pause.is_active(), "reopened on the very next frame");
-    assert_eq!(harness.game().music.counts.jam_units, 0, "the opening frame jams nothing, a move on it included");
+    assert_eq!(harness.game().music.game.jam_units(), 0, "the opening frame jams nothing, a move on it included");
     harness.step(FRAME, &[InputEvent::KeyReleased(KeyCode::Escape), InputEvent::KeyReleased(KeyCode::KeyW)]);
+}
+
+#[test]
+fn a_frame_with_a_paddle_hit_and_a_goal_triggers_the_hit_before_the_goal() {
+    let mut harness = in_a_match(&repository_assets());
+    let gap = 5.0;
+    let speed = 450.0;
+    let hitter = harness.game().balls.primary.expect("a meatball");
+    let scorer = harness.context(|game, ctx| {
+        game.state = GameState::Playing;
+        let scorer = game.spawn_ball(ctx.world, "Second Ball");
+        game.balls.extras.push(scorer);
+        let face = crate::jaw::tong_face_x(Side::Left);
+        game.physics.reset_body(hitter, Vec2::new(face + BALL_RADIUS + gap, 0.0));
+        game.physics.set_velocity(hitter, Vec2::new(-speed, 0.0), 0.0);
+        let sensor_inner = GOAL_SENSOR_X - GOAL_SENSOR_W / 2.0;
+        game.physics.reset_body(scorer, Vec2::new(sensor_inner - BALL_RADIUS - gap, 180.0));
+        game.physics.set_velocity(scorer, Vec2::new(speed, 0.0), 0.0);
+        scorer
+    });
+    let accepted = conductor(&harness).accepted_triggers;
+
+    let mut trace = Vec::new();
+    for _ in 0..10 {
+        harness.step(FRAME, &[]);
+        trace = harness.game().music.triggered.clone();
+        if !trace.is_empty() {
+            break;
+        }
+    }
+    assert_eq!(trace, ["hit", "goal"], "one physics step, the hit pass before the scoring pass");
+    assert!(harness.world().validate_entity(&scorer).is_err(), "the scorer was torn down by its goal");
+    settle(&mut harness);
+    assert_eq!(conductor(&harness).accepted_triggers, accepted + 2, "both accepted");
+    assert_eq!(conductor(&harness).live_sources, 2, "the tong's source and the game's");
 }

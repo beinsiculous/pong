@@ -169,8 +169,6 @@ pub(crate) const SONG_PATH: &str = "ai/music/ai_tong.mid";
 pub(crate) const HIT_BINDING: &str = "hit";
 pub(crate) const GOAL_BINDING: &str = "goal";
 pub(crate) const MENU_BINDING: &str = "menu";
-/// How often a `conductor=on` telemetry line is printed.
-pub(crate) const TELEMETRY_SECONDS: f32 = 5.0;
 
 /// Paddle-side colours, now only the tint of a paddle-hit particle burst — every art
 /// sprite is drawn white, so a side's colour shows nowhere else.

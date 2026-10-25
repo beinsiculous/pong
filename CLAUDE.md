@@ -157,8 +157,11 @@ the former `beinsiculous.games.pong.*` keys read at boot.
 ## Music (the Toreador, 2026-10)
 
 Tong plays Bizet's *Toreador Song* refrain through the engine's conductor (`training.md` §
-Conductor Pattern in the engine). Everything is in `src/music.rs`, its constants in
-`src/constants.rs`, its tests in `src/music_tests.rs`.
+Conductor Pattern in the engine). Tong's part is `src/music.rs` — its moments, its counts and
+its pulse — standing on the engine's `GameMusic` (`engine_core::game_music`), which carries the
+rules every game's song shares: the request, the match start's identity rule, the jam's latch,
+the beat and the telemetry. The constants are in `src/constants.rs`, the tests in
+`src/music_tests.rs`.
 
 - **The song** is `assets/ai/music/ai_tong.mid` and its sidecar `ai_tong.mid.ron`: sixteen
   bars in F major at 120 BPM, looping. An agent sequenced it through the composer's command
@@ -174,10 +177,17 @@ Conductor Pattern in the engine). Everything is in `src/music.rs`, its constants
   a goal `goal` on the game's — both walk the **one** shared `refrain` part (`Loop`,
   `quantize: Off`, so a hit sounds within a block of the contact), the hits on the trumpet and
   the goal on the timpani, so a goal continues the tune where the rally left it. Two balls
-  hitting in one frame are two hits. A move up or down in the pause menu triggers `menu` on the
-  menu's source, the `jam` counter-line (`Loop` too); it reads `MenuInput`, never the menu's
-  selection, which follows a resting pointer, and the frame the menu opens jams nothing.
-- **A match start decides by the song in the slot** (`Music::restart`, from `start_match`):
+  hitting in one frame are two hits, and a frame holding a hit and a goal at the sensor
+  triggers the hit first — the hit pass runs before the scoring pass (`music_tests.rs` reads
+  the order from `Music.triggered`, the test builds' record of the frame's calls); a ball
+  that escaped the court is scored by the safety net before either pass. A move up or down in the
+  pause menu triggers `menu` on the menu's source, the `jam` counter-line (`Loop` too); it
+  reads `MenuInput`, never the menu's selection, which follows a resting pointer, and the frame
+  the menu opens jams nothing.
+- **The sources' lifecycle**: the two tongs are spawned once in `init` and never despawned —
+  `start_game` moves them and resets their jaws — and no scene is loaded, so nothing in Tong
+  ends a source, by construction; the editor's world replacement on Stop flushes them all.
+- **A match start decides by the song in the slot** (`GameMusic::restart`, from `start_match`):
   none → Tong's is requested again; Tong's own, compared as the whole joined path → back to
   its top, so the first hit plays the refrain's first unit; another song (the composer's saved
   song in the editor bundle — an audition) → left alone, and Tong's triggers are sent to it
@@ -191,8 +201,8 @@ Conductor Pattern in the engine). Everything is in `src/music.rs`, its constants
 - **The pulse**: on each bar line the backdrop grid takes the full hit ripple under each grill,
   on any other beat a quarter of it, while Serving or Playing and never under the pause menu
   (the frozen grid discards impulses).
-- **No recorded fallback.** A song that cannot play is logged once at `error` ("Tong's song
-  could not play: …"), every trigger is refused and counted, and Tong is as silent as it was
+- **No recorded fallback.** A song that cannot play is logged once at `error` ("tong: the
+  song could not play: …"), every trigger is refused and counted, and Tong is as silent as it was
   before it had music; each match start asks again (later failures at `debug`).
 - **Telemetry**: every five seconds a `conductor=on …` line (the engine's
   `SongSnapshot::log_line`, the window's maxima taken, then the frame p95 and mean and the
@@ -200,13 +210,15 @@ Conductor Pattern in the engine). Everything is in `src/music.rs`, its constants
   `?telemetry=1` on the web page, `TONG_TELEMETRY=1` natively — and at `debug` otherwise.
   `init` ends with `tong: init complete`, the line the boot measurement stops on.
 - **The bank** is `assets/soundfonts/tong.sf2`, FluidR3 GM's trumpet (0:56), trombone (0:57)
-  and timpani (0:47), 1.98 MiB, cut by `scripts/prepare_soundfont.sh` (Debian's
+  and timpani (0:47), 1.98 MiB, cut by `scripts/prepare_soundfont.sh` — a wrapper naming the
+  stem and the presets over the engine's `scripts/prepare_game_soundfont.sh`, under a 4 MiB cap
+  the engine's script enforces (Debian's
   `fluid-soundfont-gm` 3.1-5.3 by `apt download` — or from snapshot.debian.org where apt has
   no such version — and `--bank <path>` for a FluidR3_GM.sf2 got any other way; the source's
   and the output's sha256s are in the `LICENSE` beside it). It is a committed
-  binary and stays in the history whatever replaces it. Budget: the bank under 22 MiB, the
-  song under 256 KiB, the whole audio download under 24 MiB per game; on the web every asset,
-  the bank included, is fetched before the first frame.
+  binary and stays in the history whatever replaces it. Budget: the bank under 4 MiB (the
+  wrapper's cap), the song under 256 KiB, the whole audio download under 24 MiB per game; on
+  the web every asset, the bank included, is fetched before the first frame.
 - The browser bundles moved to **v7** (game) and **v6** (editor) with the music
   (`src/web_entry.rs` names the four places each version lives).
 
