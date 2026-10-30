@@ -69,6 +69,16 @@ scene editor — useful for inspecting and tuning entities while the game runs:
   The outlines show exactly what the physics simulation uses — collider sizes
   are absolute pixels and ignore `Transform2D.scale`, which is how the sprites
   are sized, so any sprite-vs-collider mismatch is immediately visible.
+- **Resize a grill**: select **Left Grill** or **Right Grill**, then edit
+  **Transform2D → Scale** or drag the scale gizmo. The new open-hood charcoal
+  carts are drawn at 96×192 pixels (native scale X=1.2, Y=2.4). Multiplying
+  the values changes the assembly's size: `SpriteTiling` repeats its middle
+  sections and keeps the grate bars, hood and shelves at their native pixel size.
+  Add `0.4` to either scale value for another complete 32-pixel section; for
+  example, X=1.6 and Y=3.2 makes a 128×256 grill. Intermediate sizes crop the
+  last section. Complete sections keep the animated seam continuous.
+  Move an enlarged grill inward as needed to keep its hood in view. The grills
+  are visual props, so their size does not move the goal sensors.
 - **Tune collider shapes**: box half-extents, circle radius, and capsule
   height/radius are editable in the inspector. The overlay updates live;
   the running simulation picks the new shape up when the body is next

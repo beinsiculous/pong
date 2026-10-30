@@ -17,9 +17,12 @@ const MEATBALL_CELL: Vec2 = Vec2::new(48.0, 64.0);
 /// anchor is stable across the animation.
 const MEATBALL_BODY_BOUNDS: (Vec2, Vec2) = (Vec2::new(9.0, 27.0), Vec2::new(40.0, 58.0));
 
-const GRILL_CELL: Vec2 = Vec2::new(32.0, 96.0);
-/// A grill's `idle` frame — frame 0: 24 x 88, centred in its cell.
-const GRILL_BOUNDS: (Vec2, Vec2) = (Vec2::new(4.0, 4.0), Vec2::new(28.0, 92.0));
+const GRILL_CELL: Vec2 = Vec2::new(96.0, 192.0);
+/// The open-hood grill's idle frame: 88 x 176, centred in its cell.
+const GRILL_BOUNDS: (Vec2, Vec2) = (Vec2::new(4.0, 8.0), Vec2::new(92.0, 184.0));
+/// Fixed hood, shelf and front-rim pieces around the repeating 32×32 grate section.
+pub(crate) const GRILL_LEFT_BORDERS: Vec4 = Vec4::new(48.0, 80.0, 16.0, 80.0);
+pub(crate) const GRILL_RIGHT_BORDERS: Vec4 = Vec4::new(16.0, 80.0, 48.0, 80.0);
 
 const PICKUP_CELL: Vec2 = Vec2::new(32.0, 32.0);
 /// The knife's `idle` frame — frame 0: 28 x 28, a pixel right of centre.
@@ -48,12 +51,12 @@ pub(crate) const MEATBALL: SheetSpec = SheetSpec {
     bounds: MEATBALL_BODY_BOUNDS,
 };
 pub(crate) const GRILL_LEFT: SheetSpec = SheetSpec {
-    path: "sprites/ai_tong_grill_left_32x96.png",
+    path: "sprites/ai_tong_grill_left_96x192.png",
     cell: GRILL_CELL,
     bounds: GRILL_BOUNDS,
 };
 pub(crate) const GRILL_RIGHT: SheetSpec = SheetSpec {
-    path: "sprites/ai_tong_grill_right_32x96.png",
+    path: "sprites/ai_tong_grill_right_96x192.png",
     cell: GRILL_CELL,
     bounds: GRILL_BOUNDS,
 };
@@ -132,8 +135,8 @@ pub(crate) const PADDLE_SPEED: f32 = 450.0;
 pub(crate) const BALL_INITIAL_SPEED: f32 = 250.0;
 pub(crate) const BALL_MAX_SPEED: f32 = 500.0;
 
-/// The grill behind a tong: its 32 px cell flush with the goal line, drawn behind
-/// the tong so the goal mouth reads as fire behind the player.
+/// The open-hood grill's outer cell edge sits flush with the goal line. Its grate
+/// extends underneath the tong; the visual prop has no collider of its own.
 pub(crate) const GRILL_X: f32 = COURT_HALF_W - GRILL_CELL.x / 2.0;
 
 /// Depth of the court floor, of the wall strips, and of the grills. Sprites default
@@ -326,7 +329,7 @@ mod tests {
         assert_eq!(PADDLE_X, 350.0);
         assert_eq!(PADDLE_MAX_Y, 241.0);
         assert_eq!(GOAL_SENSOR_X, 410.0);
-        assert_eq!(GRILL_X, 384.0);
+        assert_eq!(GRILL_X, 352.0);
         assert_eq!(COURT_HALF_H, 280.0);
 
         // The tong's art top reaches the wall's inner face; the grill's cell is flush

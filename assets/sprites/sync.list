@@ -10,12 +10,12 @@
 # check_no_ai_assets.sh gate must still find them until Jesse's cleanup pass
 # turns them into hand-cleaned masters in deion_assets/sidescroller/.
 #
-# deion_assets bd4ff3f0b742b155e154a4f71f4837bd51164909
+# deion_assets bfbde03093b01d3bb581cb8a27aa3e2de7bf6f4b
 ai/sidescroller/tong_left/ai_tong_left.png
 ai/sidescroller/tong_right/ai_tong_right.png
 ai/sidescroller/tong_meatball/ai_tong_meatball.png
-ai/sidescroller/props/tong_grill_left/ai_tong_grill_left_32x96.png
-ai/sidescroller/props/tong_grill_right/ai_tong_grill_right_32x96.png
+ai/sidescroller/props/tong_grill_left/ai_tong_grill_left_96x192.png
+ai/sidescroller/props/tong_grill_right/ai_tong_grill_right_96x192.png
 ai/sidescroller/props/tong_pickup_flame/ai_tong_pickup_flame_32x32.png
 ai/sidescroller/props/tong_pickup_knife/ai_tong_pickup_knife_32x32.png
 ai/sidescroller/props/tong_court_edge/ai_tong_court_edge_64x16.png

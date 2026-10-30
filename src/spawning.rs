@@ -217,10 +217,12 @@ pub(crate) fn spawn_grill(
     sheet: &SpriteSheet,
 ) -> EntityId {
     let (sprite, animation) = art_components(sheet, spec);
+    let borders = if spec.path == GRILL_LEFT.path { GRILL_LEFT_BORDERS } else { GRILL_RIGHT_BORDERS };
     world.spawn()
         .with(Name::new(name))
         .with(Transform2D::from_parts(Vec2::new(x, 0.0), 0.0, spec.scale()))
         .with(sprite.with_depth(GRILL_DEPTH))
+        .with(SpriteTiling { source_size: spec.cell, borders })
         .with(animation)
         .with(grill_machine())
         .id()
@@ -411,5 +413,13 @@ mod tests {
         let x_of = |entity| world.get::<Transform2D>(entity).expect("a grill has a transform").position.x;
         assert_eq!(x_of(left), -GRILL_X, "the left grill is behind the left tong");
         assert_eq!(x_of(right), GRILL_X, "the right grill is behind the right tong");
+        let left_tiles = world.get::<SpriteTiling>(left).expect("the left grill is tiled");
+        let right_tiles = world.get::<SpriteTiling>(right).expect("the right grill is tiled");
+        assert_eq!(left_tiles.source_size, GRILL_LEFT.cell);
+        assert_eq!(right_tiles.source_size, GRILL_RIGHT.cell);
+        assert_eq!(left_tiles.borders, Vec4::new(48.0, 80.0, 16.0, 80.0));
+        assert_eq!(right_tiles.borders, Vec4::new(16.0, 80.0, 48.0, 80.0));
+        assert!(world.get::<Collider>(left).is_none(), "the grill is a visual assembly");
+        assert!(world.get::<Collider>(right).is_none(), "the separate goal sensor scores");
     }
 }

@@ -67,7 +67,7 @@ the former `beinsiculous.games.pong.*` keys read at boot.
   |---|---|---|---|
   | tong (left / right) | 64×96 | the jaw pose the drawn frame is (table below) | centred |
   | meatball | 48×64 | circle r 15.5 | (−0.5, +10.5) — the body sits low, fire above it |
-  | grill | 32×96 | none — the goal sensor scores | centred |
+  | grill | 96×192 | none — the goal sensor scores | centred |
   | pickup (flame / knife) | 32×32 | circle r 12 (the unchanged `POWERUP_SIZE`) | centred; the art's own 1 px is deliberately not applied |
   | court tile / wall rail | 64×64 / 64×16 | none | centred |
 
@@ -143,8 +143,20 @@ the former `beinsiculous.games.pong.*` keys read at boot.
   the goal sensor's box begins on it at `GOAL_SENSOR_X = 410`; the walls' inner face is at ±280;
   the tongs stand at `PADDLE_X = 350`, far enough in that a meatball resting on a tong is not
   already inside the sensor and the tong's whole 64 px cell clears it; `PADDLE_MAX_Y = 241` puts
-  the tong's art top on the wall's face; `GRILL_X = 384` puts a grill's cell flush with the goal
+  the tong's art top on the wall's face; `GRILL_X = 352` puts a grill's cell flush with the goal
   line. Inline tests in `constants.rs` pin those relations.
+- **Open-hood grills:** the overhead charcoal carts have an outward-opening hood,
+  a warming rack and slatted side shelves. Their 96×192 cells draw at native size;
+  `idle` and `score` retain four 100 ms frames each. For visual sizing in the editor,
+  select **Left Grill** or **Right Grill** and use the scale gizmo or
+  **Transform2D → Scale** (native X=1.2, Y=2.4). `SpriteTiling` interprets that
+  as a destination rectangle: fixed border pieces and repeating 32×32 middle
+  sections keep the grate and hood details at native pixel size. The right cart
+  swaps its left/right borders so both hoods stay outside. Idle and score clips
+  still animate the whole assembly. Scale increments of 0.4 add complete 32 px
+  sections; other sizes crop the final section. Move an enlarged grill inward to keep the
+  hood in view; the separate goal sensor and scoring line do not move. The stock
+  game spawns 96×192; `GRILL_CELL` describes the source art, not the resized prop.
 - **Style SSOT:** `deion_assets/DEION_STYLE.md` via the `deion_assets -> ../../deion_assets`
   symlink (the working set's layout — the Cargo path dep `../../insiculous_2d` already requires
   it). AI art is quarantined (`ai_` prefix, `deion_assets/ai/` only) — tiered ship rule
