@@ -73,7 +73,7 @@ fn the_committed_sidecar_shares_one_unquantized_loop_part_between_hit_and_goal_a
     let jam = part_of("menu");
     assert_ne!(jam.name, refrain.name);
     assert_eq!((jam.mode, jam.quantize), (PartMode::Loop, Quantize::Off));
-    assert!(file.provenance.is_some(), "the composer's save requires it");
+    assert!(file.provenance.is_some(), "the Conductor panel's Save requires it");
     assert_eq!(file.soundfont, "soundfonts/tong.sf2");
 }
 

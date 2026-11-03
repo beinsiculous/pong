@@ -176,12 +176,13 @@ the beat and the telemetry. The constants are in `src/constants.rs`, the tests i
 `src/music_tests.rs`.
 
 - **The song** is `assets/ai/music/ai_tong.mid` and its sidecar `ai_tong.mid.ron`: sixteen
-  bars in F major at 120 BPM, looping. An agent sequenced it through the composer's command
-  API (`song new`, `song edit …`, `song save ai/music/ai_tong.mid`), so it sits under
-  `ai/music` with the `ai_` prefix until a person's pass promotes it to `music/`; the
-  composer's Save wrote the sidecar, its fingerprint and the stanza in
-  `assets/ai/music/LICENSE`. Never hand-edit the sidecar — open the song in the composer
-  (`cargo run --features editor`, File → Open Song) and save it again.
+  bars in F major at 120 BPM, looping. An agent sequenced it through the editor's command API
+  while the editor still composed (`song new`, `song edit …`, `song save ai/music/ai_tong.mid`);
+  those score verbs are gone, the score is MIDI Evil's now and the engine's `song` verbs map it.
+  It sits under `ai/music` with the `ai_` prefix until a person's pass promotes it to `music/`;
+  the Conductor panel's Save wrote the sidecar, its fingerprint and the stanza in
+  `assets/ai/music/LICENSE`. Never hand-edit the sidecar — open the song in the Conductor panel
+  (`cargo run --features editor`, File → Open Song...) and save it again.
 - **The background** — the trombone's chords and the timpani's march — plays by itself from
   `init` on, through the menus and **under the pause menu** (the game's pause is
   `time_scale`; the song's own `pause_song` is never called).
@@ -201,15 +202,15 @@ the beat and the telemetry. The constants are in `src/constants.rs`, the tests i
   ends a source, by construction; the editor's world replacement on Stop flushes them all.
 - **A match start decides by the song in the slot** (`GameMusic::restart`, from `start_match`):
   none → Tong's is requested again; Tong's own, compared as the whole joined path → back to
-  its top, so the first hit plays the refrain's first unit; another song (the composer's saved
-  song in the editor bundle — an audition) → left alone, and Tong's triggers are sent to it
+  its top, so the first hit plays the refrain's first unit; another song (the Conductor panel's
+  saved song in the editor bundle — an audition) → left alone, and Tong's triggers are sent to it
   anyway, refused and counted where it binds nothing.
 - **In the editor** (`--features editor`, and `/playground/tong/`) editing is silent: the editor
-  remembers and stops the song `init` asked for, the composer's transport is what plays while
-  editing, and a Play session with no composer song open asks for Tong's song again on its first
-  frame — the first match start then finds it in the slot and seeks it to the top (the own-song
-  branch above); with a composer song open, that song is the session's music and a match leaves
-  it alone. Stop ends it.
+  remembers and stops the song `init` asked for, the Conductor panel's transport is what plays
+  while editing, and a Play session with no song open in the Conductor panel asks for Tong's song
+  again on its first frame — the first match start then finds it in the slot and seeks it to the
+  top (the own-song branch above); with a song open in the Conductor panel, that song is the
+  session's music and a match leaves it alone. Stop ends it.
 - **The pulse**: on each bar line the backdrop grid takes the full hit ripple under each grill,
   on any other beat a quarter of it, while Serving or Playing and never under the pause menu
   (the frozen grid discards impulses).
