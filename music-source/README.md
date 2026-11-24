@@ -113,4 +113,5 @@ The first install command migrates the old bank paths and provenance; the second
 movement. Run both when starting from a pre-Countertop sidecar. For a separately saved
 classical editor audition, preserve or restore its original tong.sf2 and corresponding
 LICENSE from the pinned old Git revision; do not retarget arbitrary old scores to the
-new key-limited bank. These local bundles are not an upgrade of the published versions.
+new key-limited bank. New website bundles use game v8/editor v7; the historical score restoration above
+is separate from that release.

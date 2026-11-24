@@ -232,11 +232,11 @@ the beat and the telemetry. The constants are in `src/constants.rs`, the tests i
   regeneration; runtime uses the committed closure. `music-source/README.md` documents
   rebuilding and installation through the engine's save API.
 
-The new audio bundles are local auditions only. Game v7/editor v6 are served with
-no-store locally; do not publish over those existing immutable versions. Publication
-requires the four entries listed by each bundle's checklist in `src/web_entry.rs`
-(constant, build script, site content and deployed directory) to agree. Game and
-editor versions are independent.
+- Website release bundles use game `/games/tong/v8/` and editor
+  `/playground/pong/v7/`. The matching site content and bundles
+  are prepared in `insiculous_web`; its dev/main merges deploy staging/production.
+  Preserve previous version directories. The four-place checklists in
+  `src/web_entry.rs` must agree for every later release.
 
 ## Work tracking
 
