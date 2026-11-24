@@ -1,6 +1,6 @@
 (
     version: 1,
-    soundfont: "soundfonts/tong.sf2",
+    soundfont: "soundfonts/ai_tong.sf2",
     looping: true,
     parts: [
         (
@@ -15,12 +15,18 @@
             mode: Loop,
             quantize: Off,
         ),
+        (
+            name: "movement",
+            track: Name("movement"),
+            mode: Loop,
+            quantize: Off,
+        ),
     ],
     instruments: [
         (
             name: "trumpet",
             source: SoundFont(
-                path: "soundfonts/tong.sf2",
+                path: "soundfonts/ai_tong.sf2",
                 bank: 0,
                 preset: 56,
             ),
@@ -28,9 +34,17 @@
         (
             name: "timpani",
             source: SoundFont(
-                path: "soundfonts/tong.sf2",
+                path: "soundfonts/ai_tong.sf2",
                 bank: 0,
                 preset: 47,
+            ),
+        ),
+        (
+            name: "movement",
+            source: SoundFont(
+                path: "soundfonts/ai_tong.sf2",
+                bank: 0,
+                preset: 57,
             ),
         ),
     ],
@@ -50,10 +64,15 @@
             part: "jam",
             instrument: "trumpet",
         ),
+        (
+            action: "move",
+            part: "movement",
+            instrument: "movement",
+        ),
     ],
     provenance: Some((
-        author: "Georges Bizet, 1875; sequenced by the Opus executor for Be Insiculous, 2026",
+        author: "Original AI composition and MIDI Evil synthesis for Be Insiculous, 2026",
         license: "CC0-1.0",
     )),
-    midi_fingerprint: Some(18345001712321070070),
+    midi_fingerprint: Some(16401666331753949130),
 )

@@ -13,24 +13,23 @@ fn paddle_dy(axis: f32) -> f32 {
 }
 
 impl PongGame {
-    pub(crate) fn update_paddles(&mut self, ctx: &GameContext) {
+    pub(crate) fn update_paddles(&mut self, ctx: &GameContext) -> [f32; 2] {
         let (Some(left), Some(right)) = (self.playfield.left_paddle, self.playfield.right_paddle)
-        else { return };
-        self.update_left_paddle(ctx, left);
-        self.update_right_paddle(ctx, right);
+        else { return [0.0; 2] };
+        [self.update_left_paddle(ctx, left), self.update_right_paddle(ctx, right)]
     }
 
-    fn update_left_paddle(&mut self, ctx: &GameContext, paddle: EntityId) {
-        self.move_paddle(ctx, paddle, -PADDLE_X, paddle_dy(self.tong_stick(ctx, Side::Left).y));
+    fn update_left_paddle(&mut self, ctx: &GameContext, paddle: EntityId) -> f32 {
+        self.move_paddle(ctx, paddle, -PADDLE_X, paddle_dy(self.tong_stick(ctx, Side::Left).y))
     }
 
-    fn update_right_paddle(&mut self, ctx: &GameContext, paddle: EntityId) {
+    fn update_right_paddle(&mut self, ctx: &GameContext, paddle: EntityId) -> f32 {
         let dy = if self.is_cpu_tong(Side::Right) {
             self.ai_dy(ctx, paddle)
         } else {
             paddle_dy(self.tong_stick(ctx, Side::Right).y)
         };
-        self.move_paddle(ctx, paddle, PADDLE_X, dy);
+        self.move_paddle(ctx, paddle, PADDLE_X, dy)
     }
 
     /// Whether the CPU plays this tong: in single player the right tong is the AI's,
@@ -73,10 +72,11 @@ impl PongGame {
         }
     }
 
-    fn move_paddle(&mut self, ctx: &GameContext, paddle: EntityId, x: f32, dy: f32) {
+    fn move_paddle(&mut self, ctx: &GameContext, paddle: EntityId, x: f32, dy: f32) -> f32 {
         let y = entity_y(ctx.world, paddle);
         let new_y = (y + dy * ctx.delta_time).clamp(-PADDLE_MAX_Y, PADDLE_MAX_Y);
         self.physics.set_kinematic_target(paddle, Vec2::new(x, new_y), 0.0);
+        if ctx.delta_time > 0.0 { (new_y - y) / ctx.delta_time } else { 0.0 }
     }
 }
 

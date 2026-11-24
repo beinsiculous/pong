@@ -1,0 +1,27 @@
+{
+  "name": "hat",
+  "sample_rate": 32000,
+  "seed": 4107,
+  "gain": 0.16,
+  "duration_seconds": 0.8,
+  "pitch_tracking": false,
+  "oscillators": [
+    {
+      "waveform": "noise",
+      "start_frequency_hz": 58.0,
+      "end_frequency_hz": 48.0,
+      "amplitude": 1.0
+    }
+  ],
+  "envelope": {
+    "attack_seconds": 0.002,
+    "decay_seconds": 0.025,
+    "sustain_level": 0.0,
+    "release_seconds": 0.04
+  },
+  "filter": {
+    "mode": "high_pass",
+    "cutoff_hz": 6500.0,
+    "stages": 2
+  }
+}

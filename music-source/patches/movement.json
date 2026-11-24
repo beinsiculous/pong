@@ -1,0 +1,22 @@
+{
+  "name": "movement",
+  "sample_rate": 32000,
+  "seed": 4108,
+  "gain": 0.16,
+  "duration_seconds": 0.8,
+  "pitch_tracking": true,
+  "oscillators": [
+    {
+      "waveform": "triangle",
+      "start_frequency_hz": 440.0,
+      "end_frequency_hz": 440.0,
+      "amplitude": 1.0
+    }
+  ],
+  "envelope": {
+    "attack_seconds": 0.002,
+    "decay_seconds": 0.035,
+    "sustain_level": 0.0,
+    "release_seconds": 0.04
+  }
+}

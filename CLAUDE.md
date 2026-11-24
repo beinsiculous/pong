@@ -166,37 +166,41 @@ the former `beinsiculous.games.pong.*` keys read at boot.
   must. The exit is a hand-cleaned master under `deion_assets/sidescroller/…`, re-exported without
   the prefix, with the `sync.list` line moved to it.
 
-## Music (the Toreador, 2026-10)
+## Music (Countertop Circuit, 2026-11)
 
-Tong plays Bizet's *Toreador Song* refrain through the engine's conductor (`training.md` §
+Tong plays the original *Countertop Circuit* through the engine's conductor (`training.md` §
 Conductor Pattern in the engine). Tong's part is `src/music.rs` — its moments, its counts and
 its pulse — standing on the engine's `GameMusic` (`engine_core::game_music`), which carries the
 rules every game's song shares: the request, the match start's identity rule, the jam's latch,
 the beat and the telemetry. The constants are in `src/constants.rs`, the tests in
 `src/music_tests.rs`.
 
-- **The song** is `assets/ai/music/ai_tong.mid` and its sidecar `ai_tong.mid.ron`: sixteen
-  bars in F major at 120 BPM, looping. An agent sequenced it through the editor's command API
-  while the editor still composed (`song new`, `song edit …`, `song save ai/music/ai_tong.mid`);
-  those score verbs are gone, the score is MIDI Evil's now and the engine's `song` verbs map it.
-  It sits under `ai/music` with the `ai_` prefix until a person's pass promotes it to `music/`;
-  the Conductor panel's Save wrote the sidecar, its fingerprint and the stanza in
-  `assets/ai/music/LICENSE`. Never hand-edit the sidecar — open the song in the Conductor panel
-  (`cargo run --features editor`, File → Open Song...) and save it again.
-- **The background** — the trombone's chords and the timpani's march — plays by itself from
-  `init` on, through the menus and **under the pause menu** (the game's pause is
-  `time_scale`; the song's own `pause_song` is never called).
-- **Three bindings, three sources**: a paddle hit triggers `hit` on the tong's own source and
+- **The song** is `assets/ai/music/ai_tong.mid` and its engine-saved sidecar: 32 bars
+  in D minor at 128 BPM, with A/B/break/reprise, an independent lead, syncopated bass,
+  chord stabs and synthesized drums. Editable MIDI Evil sources, original patches,
+  deterministic regeneration and synthetic conductor auditions live in `music-source/`.
+  The agent-authored score remains under `ai/music/`. Never hand-edit its map or fingerprint;
+  use the Conductor panel or the public SongDocument save API.
+- **The background** plays by itself from `init` on, through menus and under the pause
+  menu; game pause is `time_scale`, and never calls `pause_song`.
+- **Four bindings, four source identities**: a paddle hit triggers `hit` on the tong's own source and
   a goal `goal` on the game's — both walk the **one** shared `refrain` part (`Loop`,
-  `quantize: Off`, so a hit sounds within a block of the contact), the hits on the trumpet and
-  the goal on the timpani, so a goal continues the tune where the rally left it. Two balls
+  `quantize: Off`, so a hit sounds within a block of the contact), the hits on a short metallic contact synth and
+  the goal on a low punch synth, so a goal continues the tune where the rally left it. Two balls
   hitting in one frame are two hits, and a frame holding a hit and a goal at the sensor
-  triggers the hit first — the hit pass runs before the scoring pass (`music_tests.rs` reads
+  triggers the hit before the goal — the hit pass runs before the scoring pass (`music_tests.rs` reads
   the order from `Music.triggered`, the test builds' record of the frame's calls); a ball
   that escaped the court is scored by the safety net before either pass. A move up or down in the
   pause menu triggers `menu` on the menu's source, the `jam` counter-line (`Loop` too); it
   reads `MenuInput`, never the menu's selection, which follows a resting pointer, and the frame
   the menu opens jams nothing.
+- **Movement feedback**: `move` walks its own `movement` part on a quiet short triangle
+  patch, quoting D/F/A/C independently of the hit/goal cursor. Each tong's clamped target
+  speed must exceed 15 pixels per second and actual travel must occur; onset or direction change triggers
+  at most once per 180 ms. Steady holds, stationary tongs and clamped walls are silent.
+  Humans and CPU use their tong's source. Pause, title return and restart reset the
+  detector; an actual reversal during cooldown is consumed, never queued for later.
+  A command becomes an onset/reversal only when physics produces travel.
 - **The sources' lifecycle**: the two tongs are spawned once in `init` and never despawned —
   `start_game` moves them and resets their jaws — and no scene is loaded, so nothing in Tong
   ends a source, by construction; the editor's world replacement on Stop flushes them all.
@@ -219,21 +223,20 @@ the beat and the telemetry. The constants are in `src/constants.rs`, the tests i
   before it had music; each match start asks again (later failures at `debug`).
 - **Telemetry**: every five seconds a `conductor=on …` line (the engine's
   `SongSnapshot::log_line`, the window's maxima taken, then the frame p95 and mean and the
-  game's `hits`, `goals`, `jam_units`, `pulsed`, `refused`), at `info` when asked —
+  game's `hits`, `goals`, `moves`, `jam_units`, `pulsed`, `refused`), at `info` when asked —
   `?telemetry=1` on the web page, `TONG_TELEMETRY=1` natively — and at `debug` otherwise.
   `init` ends with `tong: init complete`, the line the boot measurement stops on.
-- **The bank** is `assets/soundfonts/tong.sf2`, FluidR3 GM's trumpet (0:56), trombone (0:57)
-  and timpani (0:47), 1.98 MiB, cut by `scripts/prepare_soundfont.sh` — a wrapper naming the
-  stem and the presets over the engine's `scripts/prepare_game_soundfont.sh`, under a 4 MiB cap
-  the engine's script enforces (Debian's
-  `fluid-soundfont-gm` 3.1-5.3 by `apt download` — or from snapshot.debian.org where apt has
-  no such version — and `--bank <path>` for a FluidR3_GM.sf2 got any other way; the source's
-  and the output's sha256s are in the `LICENSE` beside it). It is a committed
-  binary and stays in the history whatever replaces it. Budget: the bank under 4 MiB (the
-  wrapper's cap), the song under 256 KiB, the whole audio download under 24 MiB per game; on
-  the web every asset, the bank included, is fetched before the first frame.
-- The browser bundles moved to **v7** (game) and **v6** (editor) with the music
-  (`src/web_entry.rs` names the four places each version lives).
+- **The bank** is `assets/soundfonts/ai_tong.sf2`, original finite MIDI Evil samples,
+  under the 4 MiB ceiling. `scripts/prepare_soundfont.sh` delegates to the reproducible
+  source build, with no downloaded bank fallback. MIDI Evil is needed only for source
+  regeneration; runtime uses the committed closure. `music-source/README.md` documents
+  rebuilding and installation through the engine's save API.
+
+The new audio bundles are local auditions only. Game v7/editor v6 are served with
+no-store locally; do not publish over those existing immutable versions. Publication
+requires the four entries listed by each bundle's checklist in `src/web_entry.rs`
+(constant, build script, site content and deployed directory) to agree. Game and
+editor versions are independent.
 
 ## Work tracking
 

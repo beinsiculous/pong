@@ -1,0 +1,18 @@
+# Synthetic contacts, goals and menu moves; not gameplay recordings.
+1.100 hit 1
+2.400 hit 2
+3.200 hit 1
+4.500 goal 3
+8.000 menu 4
+8.400 menu 4
+10.700 hit 2
+29.900 goal 3
+59.900 hit 1
+60.100 hit 2
+119.800 goal 3
+120.100 menu 4
+1.000 move 1
+2.000 move 2
+31.000 move 1
+60.000 move 2
+120.000 move 1

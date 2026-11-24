@@ -1,0 +1,206 @@
+{
+  "seed": 4100,
+  "sample_rate": 32000,
+  "velocity": 127,
+  "gain": 0.8,
+  "backing_pitch_classes": [
+    0,
+    2,
+    5,
+    9
+  ],
+  "cue_pitch_classes": [
+    0,
+    2,
+    5,
+    9
+  ],
+  "renders": [
+    {
+      "instrument": 0,
+      "key": 38,
+      "ticks": 480,
+      "wav": "rendered/rubber_bass_38.wav"
+    },
+    {
+      "instrument": 0,
+      "key": 45,
+      "ticks": 480,
+      "wav": "rendered/rubber_bass_45.wav"
+    },
+    {
+      "instrument": 0,
+      "key": 50,
+      "ticks": 480,
+      "wav": "rendered/rubber_bass_50.wav"
+    },
+    {
+      "instrument": 1,
+      "key": 69,
+      "ticks": 480,
+      "wav": "rendered/neon_lead_69.wav"
+    },
+    {
+      "instrument": 1,
+      "key": 72,
+      "ticks": 480,
+      "wav": "rendered/neon_lead_72.wav"
+    },
+    {
+      "instrument": 1,
+      "key": 74,
+      "ticks": 480,
+      "wav": "rendered/neon_lead_74.wav"
+    },
+    {
+      "instrument": 1,
+      "key": 77,
+      "ticks": 480,
+      "wav": "rendered/neon_lead_77.wav"
+    },
+    {
+      "instrument": 1,
+      "key": 81,
+      "ticks": 480,
+      "wav": "rendered/neon_lead_81.wav"
+    },
+    {
+      "instrument": 1,
+      "key": 84,
+      "ticks": 480,
+      "wav": "rendered/neon_lead_84.wav"
+    },
+    {
+      "instrument": 1,
+      "key": 86,
+      "ticks": 480,
+      "wav": "rendered/neon_lead_86.wav"
+    },
+    {
+      "instrument": 2,
+      "key": 62,
+      "ticks": 480,
+      "wav": "rendered/glass_chord_62.wav"
+    },
+    {
+      "instrument": 2,
+      "key": 65,
+      "ticks": 480,
+      "wav": "rendered/glass_chord_65.wav"
+    },
+    {
+      "instrument": 2,
+      "key": 69,
+      "ticks": 480,
+      "wav": "rendered/glass_chord_69.wav"
+    },
+    {
+      "instrument": 2,
+      "key": 72,
+      "ticks": 480,
+      "wav": "rendered/glass_chord_72.wav"
+    },
+    {
+      "instrument": 3,
+      "key": 69,
+      "ticks": 480,
+      "wav": "rendered/contact_69.wav"
+    },
+    {
+      "instrument": 3,
+      "key": 72,
+      "ticks": 480,
+      "wav": "rendered/contact_72.wav"
+    },
+    {
+      "instrument": 3,
+      "key": 74,
+      "ticks": 480,
+      "wav": "rendered/contact_74.wav"
+    },
+    {
+      "instrument": 3,
+      "key": 77,
+      "ticks": 480,
+      "wav": "rendered/contact_77.wav"
+    },
+    {
+      "instrument": 3,
+      "key": 81,
+      "ticks": 480,
+      "wav": "rendered/contact_81.wav"
+    },
+    {
+      "instrument": 4,
+      "key": 69,
+      "ticks": 480,
+      "wav": "rendered/goal_69.wav"
+    },
+    {
+      "instrument": 4,
+      "key": 72,
+      "ticks": 480,
+      "wav": "rendered/goal_72.wav"
+    },
+    {
+      "instrument": 4,
+      "key": 74,
+      "ticks": 480,
+      "wav": "rendered/goal_74.wav"
+    },
+    {
+      "instrument": 4,
+      "key": 77,
+      "ticks": 480,
+      "wav": "rendered/goal_77.wav"
+    },
+    {
+      "instrument": 4,
+      "key": 81,
+      "ticks": 480,
+      "wav": "rendered/goal_81.wav"
+    },
+    {
+      "instrument": 5,
+      "key": 36,
+      "ticks": 480,
+      "wav": "rendered/kick_36.wav"
+    },
+    {
+      "instrument": 6,
+      "key": 38,
+      "ticks": 480,
+      "wav": "rendered/snare_38.wav"
+    },
+    {
+      "instrument": 7,
+      "key": 42,
+      "ticks": 480,
+      "wav": "rendered/hat_42.wav"
+    },
+    {
+      "instrument": 8,
+      "key": 72,
+      "ticks": 480,
+      "wav": "rendered/movement_72.wav"
+    },
+    {
+      "instrument": 8,
+      "key": 74,
+      "ticks": 480,
+      "wav": "rendered/movement_74.wav"
+    },
+    {
+      "instrument": 8,
+      "key": 77,
+      "ticks": 480,
+      "wav": "rendered/movement_77.wav"
+    },
+    {
+      "instrument": 8,
+      "key": 81,
+      "ticks": 480,
+      "wav": "rendered/movement_81.wav"
+    }
+  ]
+}

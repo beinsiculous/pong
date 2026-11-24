@@ -78,11 +78,24 @@ impl PongGame {
             self.music.pulse(ctx, grills);
         }
 
-        self.update_paddles(ctx);
+        let tongs = [self.playfield.left_paddle, self.playfield.right_paddle];
+        let before = tongs.map(|tong| tong.map(|entity| entity_y(ctx.world, entity)));
+        let requested_speeds = self.update_paddles(ctx);
         // The jaws are worked before the step, so the pose a frame draws is the
         // pose its physics runs against.
         self.update_tongs(ctx);
         self.physics.update(ctx.world, ctx.delta_time);
+
+        if matches!(self.state, GameState::Serving | GameState::Playing) {
+            for (index, tong) in tongs.into_iter().enumerate() {
+                if let (Some(tong), Some(previous)) = (tong, before[index]) {
+                    let displacement = entity_y(ctx.world, tong) - previous;
+                    self.music.movement(ctx, index, tong, displacement, requested_speeds[index]);
+                }
+            }
+        } else {
+            self.music.reset_movement();
+        }
 
         // Drain this frame's collision events once (take = the buffer is
         // consumed, not borrowed). Every consumer below shares this Vec, and

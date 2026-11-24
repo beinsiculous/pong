@@ -91,6 +91,7 @@ impl PongGame {
     }
 
     pub(crate) fn reset_to_title(&mut self, world: &mut World) {
+        self.music.reset_movement();
         self.clear_transient_visuals(world);
         self.destroy_all_extra_balls(world);
         self.destroy_all_powerups(world);

@@ -1,5 +1,5 @@
 //! Tong's music through the real game and the engine's harness, whose audio manager
-//! plays the committed song on its virtual clock: the sidecar's shape, the three moments
+//! plays the committed song on its virtual clock: the sidecar's shape, the four moments
 //! and the sources they trigger on, the pause jam keyed to the menu's navigation, the beat
 //! pulse, a match start deciding by the song in the slot, and a missing bank leaving the
 //! game silent and counting every trigger it refuses.
@@ -73,8 +73,14 @@ fn the_committed_sidecar_shares_one_unquantized_loop_part_between_hit_and_goal_a
     let jam = part_of("menu");
     assert_ne!(jam.name, refrain.name);
     assert_eq!((jam.mode, jam.quantize), (PartMode::Loop, Quantize::Off));
+    let movement = part_of("move");
+    assert_ne!(movement.name, refrain.name);
+    assert_ne!(movement.name, jam.name);
+    assert_eq!((movement.mode, movement.quantize), (PartMode::Loop, Quantize::Off));
+    let actions: std::collections::BTreeSet<_> = file.bindings.iter().map(|binding| binding.action.as_str()).collect();
+    assert_eq!(actions, ["goal", "hit", "menu", "move"].into_iter().collect());
     assert!(file.provenance.is_some(), "the Conductor panel's Save requires it");
-    assert_eq!(file.soundfont, "soundfonts/tong.sf2");
+    assert_eq!(file.soundfont, "soundfonts/ai_tong.sf2");
 }
 
 #[test]
@@ -196,7 +202,7 @@ fn a_beat_ripples_the_grills_while_the_match_runs_and_never_under_the_pause_menu
         std::thread::sleep(Duration::from_millis(550));
         harness.step(FRAME, &[]);
     }
-    assert!(pulsed(&harness) > before, "a beat every half second at 120 BPM");
+    assert!(pulsed(&harness) > before, "a beat every 468.75 ms at 128 BPM");
 
     key(&mut harness, KeyCode::Escape);
     let paused_at = pulsed(&harness);
@@ -220,7 +226,7 @@ impl OtherSong {
         std::fs::create_dir_all(&directory).expect("a scratch directory");
         std::fs::write(directory.join("other.mid"), one_bar_midi()).expect("written");
         let sidecar = format!(
-            "SongFile(version: 1, soundfont: \"soundfonts/tong.sf2\", looping: {looping}, parts: [], instruments: [], bindings: [])"
+            "SongFile(version: 1, soundfont: \"soundfonts/ai_tong.sf2\", looping: {looping}, parts: [], instruments: [], bindings: [])"
         );
         std::fs::write(directory.join("other.mid.ron"), sidecar).expect("written");
         Self { directory }
@@ -373,6 +379,7 @@ fn a_reopen_on_the_frame_after_a_resume_jams_nothing() {
 #[test]
 fn a_frame_with_a_paddle_hit_and_a_goal_triggers_the_hit_before_the_goal() {
     let mut harness = in_a_match(&repository_assets());
+    harness.context(|game, _| game.settings.mode = crate::types::GameMode::TwoPlayer);
     let gap = 5.0;
     let speed = 450.0;
     let hitter = harness.game().balls.primary.expect("a meatball");
@@ -404,3 +411,170 @@ fn a_frame_with_a_paddle_hit_and_a_goal_triggers_the_hit_before_the_goal() {
     assert_eq!(conductor(&harness).accepted_triggers, accepted + 2, "both accepted");
     assert_eq!(conductor(&harness).live_sources, 2, "the tong's source and the game's");
 }
+
+#[test]
+fn the_original_score_has_compatible_cues_bounded_notes_and_exact_loop_end() {
+    let assets = repository_assets();
+    let bytes = std::fs::read(assets.join(SONG_PATH)).expect("score");
+    let (data, _) = music_midi::SongData::from_smf(&bytes).expect("MIDI");
+    let text = std::fs::read_to_string(assets.join(format!("{SONG_PATH}.ron"))).expect("map");
+    let file = music_midi::parse_song_file("Tong", &text).expect("map");
+    let bank = std::fs::read(assets.join(&file.soundfont)).expect("bank");
+    let song = music_midi::Song::new(file.clone(), data, &[(file.soundfont.as_str(), &bank)], &[]).expect("loaded closure");
+    assert_eq!(song.background().end_tick(), 61440);
+    assert_eq!(song.data().ticks_per_quarter(), 480);
+    let mut backing = std::collections::BTreeSet::new();
+    let mut cues = std::collections::BTreeSet::new();
+    for track in song.data().tracks() {
+        let cue = matches!(track.name(), Some("melody" | "jam" | "movement"));
+        for unit in track.units() {
+            for note in &unit.notes {
+                assert!(unit.tick + note.duration_ticks <= 61440);
+                if track.channel() != Some(9) {
+                    assert!((38..=86).contains(&note.key));
+                    if cue { cues.insert(note.key % 12); } else { backing.insert(note.key % 12); }
+                }
+            }
+        }
+    }
+    assert_eq!(backing, [0, 2, 5, 9].into_iter().collect());
+    assert_eq!(cues, [0, 2, 5, 9].into_iter().collect());
+    for cue in cues {
+        for background in &backing {
+            let interval = (cue + 12 - background) % 12;
+            assert!(![1, 6, 11].contains(&interval), "no semitone or tritone clash at arbitrary trigger phases");
+        }
+    }
+    assert!(song.background_peak().voices <= 8);
+    assert!(bank.len() < 4 * 1024 * 1024);
+    assert_eq!(file.instruments.len(), 3);
+    let refrain = file.parts.iter().position(|part| part.name == "refrain").unwrap();
+    let movement = file.parts.iter().position(|part| part.name == "movement").unwrap();
+    let song = std::sync::Arc::new(song);
+    let (mut conductor, handle) = music_midi::Conductor::new(music_midi::ConductorConfig::new(44100)).unwrap();
+    conductor.load(song.clone()).unwrap();
+    handle.send(music_midi::ConductorCommand::Play).unwrap();
+    let start = std::time::Instant::now();
+    let source = music_midi::SourceId { id: 1, generation: 0, epoch: 1 };
+    for (index, action) in ["hit", "move", "goal"].into_iter().enumerate() {
+        let stamp = start + Duration::from_millis(index as u64 * 10);
+        handle.send(music_midi::ConductorCommand::Trigger {
+            binding: song.binding_index(action).unwrap(), source, stamp,
+        }).unwrap();
+        conductor.render_at(stamp, &mut [0.0; 64], &mut [0.0; 64], music_midi::BusGains { music: 1.0, sfx: 1.0 });
+        assert_eq!(conductor.part_cursor(refrain), Some(if action == "goal" { 2 } else { 1 }));
+        assert_eq!(conductor.part_cursor(movement), Some(if action == "hit" { 0 } else { 1 }));
+    }
+    assert_eq!(handle.position().snapshot().accepted_triggers, 3);
+}
+
+
+#[test]
+fn actual_movement_sounds_on_onset_and_reversal_but_not_hold_stationary_or_wall() {
+    let mut harness = in_a_match(&repository_assets());
+    harness.context(|game, _| game.settings.mode = crate::types::GameMode::TwoPlayer);
+    let left = harness.game().playfield.left_paddle.unwrap();
+    harness.step(FRAME, &[InputEvent::KeyPressed(KeyCode::KeyW)]);
+    assert_eq!(harness.game().music.counts.moves, 1);
+    assert!(harness.sound_sources().source_of(left).is_some());
+    harness.steps(12, FRAME);
+    assert_eq!(harness.game().music.counts.moves, 1, "steady hold stays quiet beyond cooldown");
+    harness.step(FRAME, &[InputEvent::KeyReleased(KeyCode::KeyW), InputEvent::KeyPressed(KeyCode::KeyS)]);
+    assert_eq!(harness.game().music.counts.moves, 2, "reversal sounds");
+    harness.step(FRAME, &[InputEvent::KeyReleased(KeyCode::KeyS), InputEvent::KeyPressed(KeyCode::KeyW)]);
+    harness.steps(15, FRAME);
+    assert_eq!(harness.game().music.counts.moves, 2, "cooldown consumes reversal without deferring it");
+    harness.steps(60, FRAME);
+    assert_eq!(harness.game().music.counts.moves, 2, "clamped wall cannot chatter");
+    assert!((harness.world().get::<Transform2D>(left).unwrap().position.y - crate::constants::PADDLE_MAX_Y).abs() < 0.01);
+    harness.step(FRAME, &[InputEvent::KeyReleased(KeyCode::KeyW)]);
+    harness.steps(20, FRAME);
+    assert_eq!(harness.game().music.counts.moves, 2, "stationary is silent");
+    harness.step(FRAME, &[InputEvent::KeyPressed(KeyCode::KeyW)]);
+    assert_eq!(harness.game().music.counts.moves, 2, "new input at wall is not movement");
+    harness.step(FRAME, &[InputEvent::KeyReleased(KeyCode::KeyW), InputEvent::KeyPressed(KeyCode::KeyS)]);
+    assert_eq!(harness.game().music.counts.moves, 3, "leaving wall is onset");
+}
+
+#[test]
+fn both_humans_and_cpu_use_the_moving_tongs_source() {
+    let mut harness = in_a_match(&repository_assets());
+    harness.context(|game, _| game.settings.mode = crate::types::GameMode::TwoPlayer);
+    harness.step(FRAME, &[InputEvent::KeyPressed(KeyCode::KeyW), InputEvent::KeyPressed(KeyCode::ArrowUp)]);
+    assert_eq!(harness.game().music.counts.moves, 2);
+    for tong in [harness.game().playfield.left_paddle, harness.game().playfield.right_paddle] {
+        assert!(harness.sound_sources().source_of(tong.unwrap()).is_some());
+    }
+    let mut cpu = in_a_match(&repository_assets());
+    cpu.context(|game, ctx| {
+        let ball = game.balls.primary.unwrap();
+        game.physics.reset_body(ball, Vec2::new(0.0, 150.0));
+        ctx.world.get_mut::<Transform2D>(ball).unwrap().position.y = 150.0;
+    });
+    cpu.step(FRAME, &[]);
+    assert_eq!(cpu.game().music.counts.moves, 1);
+    assert!(cpu.sound_sources().source_of(cpu.game().playfield.right_paddle.unwrap()).is_some());
+}
+
+#[test]
+fn movement_resets_on_restart_and_pause_never_replays_menu_motion() {
+    let mut harness = in_a_match(&repository_assets());
+    harness.context(|game, _| game.settings.mode = crate::types::GameMode::TwoPlayer);
+    harness.step(FRAME, &[InputEvent::KeyPressed(KeyCode::KeyW)]);
+    assert_eq!(harness.game().music.counts.moves, 1);
+    harness.context(|game, ctx| game.start_match(ctx));
+    harness.step(FRAME, &[]);
+    assert_eq!(harness.game().music.counts.moves, 2, "restart clears cooldown and onset history");
+    key(&mut harness, KeyCode::Escape);
+    harness.step(FRAME, &[InputEvent::KeyReleased(KeyCode::KeyW), InputEvent::KeyPressed(KeyCode::KeyS)]);
+    harness.steps(20, FRAME);
+    assert_eq!(harness.game().music.counts.moves, 2);
+    harness.step(FRAME, &[InputEvent::KeyReleased(KeyCode::KeyS)]);
+    key(&mut harness, KeyCode::Escape);
+    harness.steps(20, FRAME);
+    assert_eq!(harness.game().music.counts.moves, 2, "pause movement is not replayed");
+    harness.step(FRAME, &[InputEvent::KeyPressed(KeyCode::KeyW)]);
+    assert_eq!(harness.game().music.counts.moves, 3);
+    harness.context(|game, ctx| game.reset_to_title(ctx.world));
+    harness.steps(20, FRAME);
+    assert_eq!(harness.game().music.counts.moves, 3, "title is silent");
+}
+
+#[test]
+fn movement_and_contact_and_goal_coexist_in_one_physics_frame() {
+    let mut harness = in_a_match(&repository_assets());
+    harness.context(|game, _| game.settings.mode = crate::types::GameMode::TwoPlayer);
+    let gap = 5.0;
+    let speed = 450.0;
+    let hitter = harness.game().balls.primary.expect("a meatball");
+    let scorer = harness.context(|game, ctx| {
+        game.state = GameState::Playing;
+        let scorer = game.spawn_ball(ctx.world, "Second Ball");
+        game.balls.extras.push(scorer);
+        let face = crate::jaw::tong_face_x(Side::Left);
+        game.physics.reset_body(hitter, Vec2::new(face + BALL_RADIUS + gap, 0.0));
+        game.physics.set_velocity(hitter, Vec2::new(-speed, 0.0), 0.0);
+        let sensor_inner = GOAL_SENSOR_X - GOAL_SENSOR_W / 2.0;
+        game.physics.reset_body(scorer, Vec2::new(sensor_inner - BALL_RADIUS - gap, 180.0));
+        game.physics.set_velocity(scorer, Vec2::new(speed, 0.0), 0.0);
+        scorer
+    });
+    let accepted = conductor(&harness).accepted_triggers;
+
+    let mut trace = Vec::new();
+    for _ in 0..10 {
+        harness.step(FRAME, &[InputEvent::KeyPressed(KeyCode::KeyW)]);
+        trace = harness.game().music.triggered.clone();
+        if !trace.is_empty() {
+            break;
+        }
+    }
+    assert_eq!(trace, ["move", "hit", "goal"], "one physics step, the hit pass before the scoring pass");
+    assert!(harness.world().validate_entity(&scorer).is_err(), "the scorer was torn down by its goal");
+    harness.step(FRAME, &[InputEvent::KeyReleased(KeyCode::KeyW)]);
+    settle(&mut harness);
+    assert_eq!(conductor(&harness).accepted_triggers, accepted + 3, "all accepted");
+    assert_eq!(conductor(&harness).live_sources, 2, "the tong's source and the game's");
+}
+
+mod high_refresh;

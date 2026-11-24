@@ -19,6 +19,7 @@ glam = { version = "0.30.10", features = ["serde"] }
 log = "0.4"
 
 [dev-dependencies]
+editor = { path = "../../insiculous_2d/crates/editor" }
 engine_core = { path = "../../insiculous_2d/crates/engine_core", features = ["test-support"] }
 # The song sidecar's parser, for the test that reads the committed sidecar's shape.
 music_midi = { path = "../../insiculous_2d/crates/music_midi" }

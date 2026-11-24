@@ -1,0 +1,366 @@
+{
+  "version": 1,
+  "name": "Countertop Circuit",
+  "copyright": "Original AI synthesis; Be Insiculous; CC0-1.0",
+  "presets": [
+    {
+      "name": "rubber_bass",
+      "bank": 0,
+      "program": 0,
+      "zones": [
+        {
+          "wav": "rendered/rubber_bass_38.wav",
+          "keys": [
+            38,
+            38
+          ],
+          "root": 38,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/rubber_bass_45.wav",
+          "keys": [
+            45,
+            45
+          ],
+          "root": 45,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/rubber_bass_50.wav",
+          "keys": [
+            50,
+            50
+          ],
+          "root": 50,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        }
+      ]
+    },
+    {
+      "name": "neon_lead",
+      "bank": 0,
+      "program": 1,
+      "zones": [
+        {
+          "wav": "rendered/neon_lead_69.wav",
+          "keys": [
+            69,
+            69
+          ],
+          "root": 69,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/neon_lead_72.wav",
+          "keys": [
+            72,
+            72
+          ],
+          "root": 72,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/neon_lead_74.wav",
+          "keys": [
+            74,
+            74
+          ],
+          "root": 74,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/neon_lead_77.wav",
+          "keys": [
+            77,
+            77
+          ],
+          "root": 77,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/neon_lead_81.wav",
+          "keys": [
+            81,
+            81
+          ],
+          "root": 81,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/neon_lead_84.wav",
+          "keys": [
+            84,
+            84
+          ],
+          "root": 84,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/neon_lead_86.wav",
+          "keys": [
+            86,
+            86
+          ],
+          "root": 86,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        }
+      ]
+    },
+    {
+      "name": "glass_chord",
+      "bank": 0,
+      "program": 2,
+      "zones": [
+        {
+          "wav": "rendered/glass_chord_62.wav",
+          "keys": [
+            62,
+            62
+          ],
+          "root": 62,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/glass_chord_65.wav",
+          "keys": [
+            65,
+            65
+          ],
+          "root": 65,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/glass_chord_69.wav",
+          "keys": [
+            69,
+            69
+          ],
+          "root": 69,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/glass_chord_72.wav",
+          "keys": [
+            72,
+            72
+          ],
+          "root": 72,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        }
+      ]
+    },
+    {
+      "name": "contact",
+      "bank": 0,
+      "program": 56,
+      "zones": [
+        {
+          "wav": "rendered/contact_69.wav",
+          "keys": [
+            69,
+            69
+          ],
+          "root": 69,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/contact_72.wav",
+          "keys": [
+            72,
+            72
+          ],
+          "root": 72,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/contact_74.wav",
+          "keys": [
+            74,
+            74
+          ],
+          "root": 74,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/contact_77.wav",
+          "keys": [
+            77,
+            77
+          ],
+          "root": 77,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/contact_81.wav",
+          "keys": [
+            81,
+            81
+          ],
+          "root": 81,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        }
+      ]
+    },
+    {
+      "name": "goal",
+      "bank": 0,
+      "program": 47,
+      "zones": [
+        {
+          "wav": "rendered/goal_69.wav",
+          "keys": [
+            69,
+            69
+          ],
+          "root": 69,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/goal_72.wav",
+          "keys": [
+            72,
+            72
+          ],
+          "root": 72,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/goal_74.wav",
+          "keys": [
+            74,
+            74
+          ],
+          "root": 74,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/goal_77.wav",
+          "keys": [
+            77,
+            77
+          ],
+          "root": 77,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/goal_81.wav",
+          "keys": [
+            81,
+            81
+          ],
+          "root": 81,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        }
+      ]
+    },
+    {
+      "name": "Circuit drums",
+      "bank": 128,
+      "program": 0,
+      "zones": [
+        {
+          "wav": "rendered/kick_36.wav",
+          "keys": [
+            36,
+            36
+          ],
+          "root": 36,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/snare_38.wav",
+          "keys": [
+            38,
+            38
+          ],
+          "root": 38,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/hat_42.wav",
+          "keys": [
+            42,
+            42
+          ],
+          "root": 42,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        }
+      ]
+    },
+    {
+      "name": "movement",
+      "bank": 0,
+      "program": 57,
+      "zones": [
+        {
+          "wav": "rendered/movement_72.wav",
+          "keys": [
+            72,
+            72
+          ],
+          "root": 72,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/movement_74.wav",
+          "keys": [
+            74,
+            74
+          ],
+          "root": 74,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/movement_77.wav",
+          "keys": [
+            77,
+            77
+          ],
+          "root": 77,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        },
+        {
+          "wav": "rendered/movement_81.wav",
+          "keys": [
+            81,
+            81
+          ],
+          "root": 81,
+          "release_seconds": 0.04,
+          "longest_note_seconds": 0.24
+        }
+      ]
+    }
+  ]
+}

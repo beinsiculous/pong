@@ -164,13 +164,15 @@ pub(crate) const HIT_RIPPLE_RADIUS: f32 = 80.0;
 /// A beat that is not a bar line ripples the grills at this share of a hit.
 pub(crate) const BEAT_PULSE_FRACTION: f32 = 0.25;
 
-/// Tong's song under the asset base: an agent's first cut, under `ai/music` until a
-/// person's pass promotes it.
+/// Countertop Circuit stays under ai/music with its original-composition provenance.
 pub(crate) const SONG_PATH: &str = "ai/music/ai_tong.mid";
-/// The song's three bindings: a paddle hit and a goal walk the shared refrain, a pause
-/// menu move the jam.
+/// Hits and goals walk the refrain; menu navigation and tong movement have separate parts.
 pub(crate) const HIT_BINDING: &str = "hit";
 pub(crate) const GOAL_BINDING: &str = "goal";
+pub(crate) const MOVE_BINDING: &str = "move";
+/// Ignore small movement commands and cap repeated direction-change feedback.
+pub(crate) const MOVEMENT_SOUND_MIN_SPEED: f32 = 15.0;
+pub(crate) const MOVEMENT_SOUND_COOLDOWN: f32 = 0.18;
 pub(crate) const MENU_BINDING: &str = "menu";
 
 /// Paddle-side colours, now only the tint of a paddle-hit particle burst — every art

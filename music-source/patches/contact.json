@@ -1,0 +1,28 @@
+{
+  "name": "contact",
+  "sample_rate": 32000,
+  "seed": 4103,
+  "gain": 0.68,
+  "duration_seconds": 0.8,
+  "pitch_tracking": true,
+  "oscillators": [
+    {
+      "waveform": "sine",
+      "start_frequency_hz": 440.0,
+      "end_frequency_hz": 440.0,
+      "amplitude": 1.0
+    },
+    {
+      "waveform": "sine",
+      "start_frequency_hz": 1760.0,
+      "end_frequency_hz": 1760.0,
+      "amplitude": 0.35
+    }
+  ],
+  "envelope": {
+    "attack_seconds": 0.002,
+    "decay_seconds": 0.075,
+    "sustain_level": 0.0,
+    "release_seconds": 0.04
+  }
+}
